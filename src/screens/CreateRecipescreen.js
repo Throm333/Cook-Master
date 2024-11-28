@@ -1,9 +1,9 @@
 import { StyleSheet, Text, View } from "react-native";
 
-const Homescreen = () => {
+const CreateRecipescreen = () => {
   return (
     <View style={styles.container}>
-      <Text>Home</Text>
+      <Text>Create a recipe here</Text>
     </View>
   );
 };
@@ -17,4 +17,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Homescreen;
+export default CreateRecipescreen;

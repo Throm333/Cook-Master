@@ -1,9 +1,11 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
-import HomeScreen from "../screens/Homescreen";
-import FavoriteScreen from "../screens/Favoritescreen";
+import CreateRecipescreen from "../screens/CreateRecipescreen";
+import Weekplanerscreen from "../screens/Weekplanerscreen";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import Homescreen from "../screens/Homescreen";
+import Favoritescreen from "../screens/Favoritescreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -19,6 +21,10 @@ export default function AppNavigation() {
               iconName = focused ? "home" : "home-outline";
             } else if (route.name === "Favorites") {
               iconName = focused ? "heart" : "heart-outline";
+            } else if (route.name === "Planner") {
+              iconName = focused ? "calendar" : "calendar-outline";
+            } else if (route.name === "Create Recipe") {
+              iconName = focused ? "add-circle" : "add-circle-outline";
             }
 
             return <Ionicons name={iconName} size={size} color={color} />;
@@ -27,8 +33,10 @@ export default function AppNavigation() {
           tabBarInactiveTintColor: "gray",
         })}
       >
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Favorites" component={FavoriteScreen} />
+        <Tab.Screen name="Home" component={Homescreen} />
+        <Tab.Screen name="Favorites" component={Favoritescreen} />
+        <Tab.Screen name="Planner" component={Weekplanerscreen} />
+        <Tab.Screen name="Create Recipe" component={CreateRecipescreen} />
       </Tab.Navigator>
     </NavigationContainer>
   );
