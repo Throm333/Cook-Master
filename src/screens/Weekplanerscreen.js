@@ -4,13 +4,7 @@ const Weekplanerscreen = () => {
   return (
     <View style={styles.container}>
       <Text>Create a weekly planner here</Text>
-    </View>
-  );
-};
-
-const Weekplanner = () => {
-  return (
-    <body>
+      <body>
       <table>
         <thead>
           <tr>
@@ -55,8 +49,12 @@ const Weekplanner = () => {
         </tbody>
       </table>
     </body>
+    </View>
   );
-}
+};
+
+
+
 
 const styles = StyleSheet.create({
   container: {
