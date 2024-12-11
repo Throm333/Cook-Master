@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, TextInput, StyleSheet, Pressable } from "react-native";
+import { View, TextInput, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 const HomeScreen = () => {
@@ -19,9 +19,9 @@ const HomeScreen = () => {
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
-        <Pressable onPress={handleSearch}>
-          <Ionicons name="search" size={24} color="#FF6347" />{" "}
-        </Pressable>
+        <TouchableOpacity onPress={handleSearch}>
+          <Ionicons name="search" size={24} color="#FF6347"></Ionicons>
+        </TouchableOpacity>
       </View>
     </View>
   );
