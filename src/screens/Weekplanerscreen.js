@@ -21,7 +21,7 @@ const Weekplanerscreen = () => {
               {days.map((day) => (
                 <TouchableOpacity
                 style={styles.cell} key={`${day}-${time}`}
-                
+                onPress={() => handleCellPress(day, time)}
                 >
                   <Text >
                     {time}
@@ -41,6 +41,10 @@ const Weekplanerscreen = () => {
       </View>
     </View>
   );
+};
+
+const handleCellPress = (day, time) => {
+  alert(`Zelle ${day} ${time} wurde geklickt!`);
 };
 
 const styles = StyleSheet.create({
