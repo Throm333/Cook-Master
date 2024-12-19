@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const { createClient } = require("@supabase/supabase-js");
+import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = "https://umxefhpogivleljntkdz.supabase.co";
 const supabaseKey =
@@ -19,13 +19,15 @@ const api = axios.create({
 
 export default supabase;
 
-async function fetchInsertRecipes() {
+async function insertRecipes() {
   try {
     const response = await api.get("/complexSearch", {
-      params: { number: 20 },
+      params: { number: 15 },
     });
 
     const recipes = response.data.results;
+
+    console.log(`${recipes.length} Rezepte erfolgreich abgerufen.`);
 
     for (const recipe of recipes) {
       const recipeDetailsResponse = await api.get(`/${recipe.id}/information`);
@@ -164,4 +166,4 @@ async function fetchInsertRecipes() {
   }
 }
 
-fetchInsertRecipes();
+insertRecipes();

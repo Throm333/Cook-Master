@@ -19,7 +19,7 @@ const HomeScreen = () => {
       const { data, error } = await supabase
         .from("recipes")
         .select("*")
-        .limit(10);
+        .limit(15);
       if (error) throw error;
       setRecipes(data || []);
     } catch (error) {
