@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, View, Image, Button, TextInput } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 //import { TextInput } from "react-native-gesture-handler";
 
 const CreateRecipescreen = () => {
@@ -32,8 +33,11 @@ const PortionAmount = () => {
         />
       </View>
 
-        <TextInput
+        <TextInput                    // Portionenmenge, nur Zahlen sind erlaubt
           style={styles.portions}
+          placeholder="Serving size"
+          placeholderTextColor="#888"
+          keyboardType="numeric"      // Öffnet Zahlen keyboard auf dem Handy
         />
 
         <Button
@@ -55,8 +59,8 @@ const styles = StyleSheet.create({
   titleBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f0f0f0",
     borderRadius: 8,
+    borderWidth: 1, // Create border
     paddingHorizontal: 10,
     paddingVertical: 8,
     marginBottom: 16,
@@ -70,7 +74,7 @@ const styles = StyleSheet.create({
   titleInput: {
     flex: 1,
     fontSize: 16,
-    color: "#333",
+    color: "#000",
   },
 
   imageContainer: {
@@ -79,16 +83,15 @@ const styles = StyleSheet.create({
   },
 
   recipeImage: {
-    width: 550,
-    height: 400,
+    borderRadius: 8,
     borderWidth: 2,
   },
 
   portions: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f0f0f0",
     borderRadius: 8,
+    borderWidth: 1, // Create border
     paddingHorizontal: 10,
     paddingVertical: 8,
     marginBottom: 16,
@@ -98,6 +101,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     shadowOffset: { width: 0, height: 2 },
   }
+
 });
 
 export default CreateRecipescreen;
