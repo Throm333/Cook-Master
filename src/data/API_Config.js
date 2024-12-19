@@ -30,8 +30,27 @@ async function insertRecipes() {
     console.log(`${recipes.length} Rezepte erfolgreich abgerufen.`);
 
     for (const recipe of recipes) {
-      const recipeDetailsResponse = await api.get(`/${recipe.id}/information`);
+      const { data: existingRecipes, error: checkError } = await supabase
+        .from("recipes")
+        .select("title")
+        .eq("title", recipe.title);
 
+      if (checkError) {
+        console.error(
+          `Fehler beim Überprüfen des Rezepts "${recipe.title}":`,
+          checkError.message
+        );
+        continue;
+      }
+
+      if (existingRecipes.length > 0) {
+        console.log(
+          `Rezept "${recipe.title}" existiert bereits, wird nicht hinzugefügt.`
+        );
+        continue;
+      }
+
+      const recipeDetailsResponse = await api.get(`/${recipe.id}/information`);
       const recipeDetails = recipeDetailsResponse.data;
 
       /* -----------------------------Zutaten, Kategorie und Anleitung werden extrahiert-------------------------------------- */

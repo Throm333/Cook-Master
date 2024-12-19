@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
-const CreateRecipescreen = () => {
+const AddRecipesScreen = () => {
   return (
     <View style={styles.container}>
       <Text>Create a recipe here</Text>
@@ -17,4 +17,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CreateRecipescreen;
+export default AddRecipesScreen;

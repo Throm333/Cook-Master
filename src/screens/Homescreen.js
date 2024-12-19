@@ -9,10 +9,13 @@ import {
   Image,
 } from "react-native";
 import supabase from "../data/API_Config";
+import { useNavigation } from "@react-navigation/native";
 
 const HomeScreen = () => {
   const [recipes, setRecipes] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const navigation = useNavigation();
 
   const fetchRecipes = async () => {
     try {
@@ -32,7 +35,10 @@ const HomeScreen = () => {
   }, []);
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.recipeCard}>
+    <TouchableOpacity
+      style={styles.recipeCard}
+      onPress={() => navigation.navigate("DetailRecipe", { title: item.title })}
+    >
       <Image source={{ uri: item.image }} style={styles.recipeImage} />
       <Text style={styles.recipeTitle}>{item.title}</Text>
     </TouchableOpacity>

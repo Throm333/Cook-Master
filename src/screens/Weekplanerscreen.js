@@ -20,24 +20,20 @@ const Weekplanerscreen = () => {
             <View style={styles.row} key={time}>
               {days.map((day) => (
                 <TouchableOpacity
-                style={styles.cell} key={`${day}-${time}`}
-                onPress={() => handleCellPress(day, time)}
+                  style={styles.cell}
+                  key={`${day}-${time}`}
+                  onPress={() => handleCellPress(day, time)}
                 >
-                  <Text >
-                    {time}
-                 </Text>
+                  <Text>{time}</Text>
                 </TouchableOpacity>
               ))}
-                
             </View>
           ))}
         </View>
       </View>
 
       <View style={styles.bottomContainer}>
-        <Text style={styles.bottomText}>
-          Zutatenliste.
-        </Text>
+        <Text style={styles.bottomText}>Zutatenliste.</Text>
       </View>
     </View>
   );
