@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, TouchableOpacity, Text, View } from "react-native";
 
 const Weekplanerscreen = () => {
   const days = ["MO", "DI", "MI", "DO", "FR", "SA", "SO"];
@@ -8,7 +8,6 @@ const Weekplanerscreen = () => {
   return (
     <View style={styles.container}>
       <View style={styles.tableContainer}>
-        <Text style={styles.headerText}>Weekly Planner</Text>
         <View style={styles.table}>
           <View style={styles.row}>
             {days.map((day) => (
@@ -20,9 +19,13 @@ const Weekplanerscreen = () => {
           {times.map((time) => (
             <View style={styles.row} key={time}>
               {days.map((day) => (
-                <Text style={styles.cell} key={`${day}-${time}`}>
-                  {time}
-                </Text>
+                <TouchableOpacity
+                  style={styles.cell}
+                  key={`${day}-${time}`}
+                  onPress={() => handleCellPress(day, time)}
+                >
+                  <Text>{time}</Text>
+                </TouchableOpacity>
               ))}
             </View>
           ))}
@@ -30,12 +33,14 @@ const Weekplanerscreen = () => {
       </View>
 
       <View style={styles.bottomContainer}>
-        <Text style={styles.bottomText}>
-          Hier können weitere Inhalte stehen.
-        </Text>
+        <Text style={styles.bottomText}>Zutatenliste.</Text>
       </View>
     </View>
   );
+};
+
+const handleCellPress = (day, time) => {
+  alert(`Zelle ${day} ${time} wurde geklickt!`);
 };
 
 const styles = StyleSheet.create({
