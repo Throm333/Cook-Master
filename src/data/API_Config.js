@@ -4,8 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = "https://umxefhpogivleljntkdz.supabase.co";
 const supabaseKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVteGVmaHBvZ2l2bGVsam50a2R6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMjgxMDM4NiwiZXhwIjoyMDQ4Mzg2Mzg2fQ.C7W5--V-arhbd_d6QnOj9RXFzIFJTCisXPFwDb11eCc";
-
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVteGVmaHBvZ2l2bGVsam50a2R6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4MTAzODYsImV4cCI6MjA0ODM4NjM4Nn0.wdvOxDjIddMebJBM4Qb31qIWiPvx51AojVBW29YSV7I";
 const spoonacularApiKey = "a4f80292b4794312bab3783a88014418";
 
 const supabase = createClient(supabaseUrl, supabaseKey);
