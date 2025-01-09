@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, View, Image, Button, TextInput } from "react-native";
 
+
 const CreateRecipescreen = () => {
   const [newRecipe, setNewRecipe] = useState("");
+  const [portions, setPortions] = useState(2); // Startwert für die Portionenanzahl
 
   return (
     <View style={styles.container}>
@@ -23,12 +25,22 @@ const CreateRecipescreen = () => {
         />
       </View>
 
-        <TextInput                    // Portionenmenge, nur Zahlen sind erlaubt
-          style={styles.portions}
-          placeholder="Serving size"
-          placeholderTextColor="#888"
-          keyboardType="numeric"      // Öffnet Zahlen Keyboard auf dem Handy
-        />
+      <View style={styles.portionContainer}>   
+        <Text style={styles.portionLabel}>Portionen:</Text>
+        <View style={styles.portionControls}>
+          <Button title="-" onPress={() => setPortions(portions > 1 ? portions - 1 : 1)} />
+          <TextInput
+            style={styles.portionsInput}
+            value={String(portions)} // Der Wert des TextInput ist mit `portions` verbunden
+            keyboardType="numeric"
+            onChangeText={(value) => {
+              const numericValue = Number(value);
+              setPortions(numericValue > 0 ? numericValue : ""); // Setze nur positive Werte, sonst leeres Feld
+            }}
+          />
+          <Button title="+" onPress={() => setPortions(portions + 1)} />
+        </View>
+      </View>
 
         <Button                       // Button um das Rezept zu speichern
           style={styles.saveButton}
@@ -81,20 +93,40 @@ const styles = StyleSheet.create({
     height: "100%",
   },
 
-  portions: {
+  portionContainer: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 8,
-    borderWidth: 1, // Create border
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    justifyContent: "space-between",  // neu
     marginBottom: 16,
+    padding: 10,  // instead of padding vertical and horizontel
+    borderWidth: 1,
+    borderRadius: 8,
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
     shadowOffset: { width: 0, height: 2 },
-  }
+  },
+
+  portionLabel: {
+    fontSize: 16,
+    color: "#000",
+  },
+
+  portionControls: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  portionsInput: {
+    fontSize: 16,
+    textAlign: "center",
+    width: 50,
+    borderBottomWidth: 1,
+    borderColor: "#ccc",
+    marginHorizontal: 10,
+  },
 
 });
 
