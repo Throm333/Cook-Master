@@ -1,24 +1,14 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, View, Image, Button, TextInput } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
-//import { TextInput } from "react-native-gesture-handler";
 
 const CreateRecipescreen = () => {
   const [newRecipe, setNewRecipe] = useState("");
-
-const PortionAmount = () => {
-  const [portions, setPortions] = useState(2); // Startwert
-
-  const increasePortions = () => setPortions((previous) => previous + 1);
-  const decreasePortions = () => setPortions((previous) => previous - 1); 
-}
-
 
   return (
     <View style={styles.container}>
       <View style={styles.titleBox}>
       
-        <TextInput
+        <TextInput                    // Rezepttitel
           style={styles.titleInput}
           placeholder="Recipe titel"
           placeholderTextColor="#888"
@@ -27,7 +17,7 @@ const PortionAmount = () => {
         />
       </View>
 
-      <View style={styles.imageContainer}>
+      <View style={styles.imageContainer}> 
         <Image
           style={styles.recipeImage}
         />
@@ -37,10 +27,10 @@ const PortionAmount = () => {
           style={styles.portions}
           placeholder="Serving size"
           placeholderTextColor="#888"
-          keyboardType="numeric"      // Öffnet Zahlen keyboard auf dem Handy
+          keyboardType="numeric"      // Öffnet Zahlen Keyboard auf dem Handy
         />
 
-        <Button
+        <Button                       // Button um das Rezept zu speichern
           style={styles.saveButton}
           title= "Save Recipe"
           color= "#234a91"
@@ -77,14 +67,18 @@ const styles = StyleSheet.create({
     color: "#000",
   },
 
-  imageContainer: {
+  imageContainer: {       // Rezeptbild Container
     alignItems: "center",
     marginBottom: 16,
+    width: "100%",
+    height: 300,
   },
 
-  recipeImage: {
+  recipeImage: {      // Platzhalter für das Bild später
     borderRadius: 8,
     borderWidth: 2,
+    width: "100%",
+    height: "100%",
   },
 
   portions: {
@@ -105,5 +99,4 @@ const styles = StyleSheet.create({
 });
 
 export default CreateRecipescreen;
-
 
