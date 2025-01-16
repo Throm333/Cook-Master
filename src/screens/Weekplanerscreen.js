@@ -24,8 +24,8 @@ const Weekplanerscreen = () => {
               </Text>
             ))}
           </View>
-          {times.map((time) => (
-            <View style={styles.row} key={time}>
+          {times.map((time, index) => (
+            <View style={styles.row} key={index}>
               {days.map((day) => (
                 <TouchableOpacity
                   style={styles.cell}
