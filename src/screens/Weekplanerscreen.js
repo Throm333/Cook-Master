@@ -1,9 +1,17 @@
-import React from "react";
-import { StyleSheet, TouchableOpacity, Text, View } from "react-native";
+import React, { useState } from 'react';
+import { Modal, StyleSheet, TouchableOpacity, Text, View, Button, Image } from "react-native";
+import { RollInRight } from 'react-native-reanimated';
+import Abend from '../../assets/images/abendsIcon.jpg';
+
 
 const Weekplanerscreen = () => {
   const days = ["MO", "DI", "MI", "DO", "FR", "SA", "SO"];
-  const times = ["Früh", "Mittag", "Abend"];
+  const times = [
+  <Image source={require('../../assets/images/morgensIcon.jpg')} style={{ width: 50, height: 50 }}/>, 
+  <Image source={require('../../assets/images/mittagsIcon.jpg')} style={{ width: 50, height: 50 }}/>, 
+  <Image source={require('../../assets/images/abendsIcon.jpg')} style={{ width: 50, height: 50 }}/>
+                ];
+  const [modalVisible, setModalVisible] = useState(false);
 
   return (
     <View style={styles.container}>
@@ -22,7 +30,7 @@ const Weekplanerscreen = () => {
                 <TouchableOpacity
                   style={styles.cell}
                   key={`${day}-${time}`}
-                  onPress={() => handleCellPress(day, time)}
+                  onPress={() => setModalVisible(true)}
                 >
                   <Text>{time}</Text>
                 </TouchableOpacity>
@@ -34,14 +42,42 @@ const Weekplanerscreen = () => {
 
       <View style={styles.bottomContainer}>
         <Text style={styles.bottomText}>Zutatenliste.</Text>
+
       </View>
+      <View style={styles.container}>
+
+      {/* Modal-Komponente */}
+      <Modal
+        animationType="slide"        // Optionen: 'none', 'slide', 'fade'
+        transparent={true}          // HIntergrund transparent
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+        }}
+      >
+        {/* Container für den halbtransparenten Hintergrund */}
+        <View style={styles.modalOverlay}>
+          {/* Inhalt des Modals */}
+          <View style={styles.modalContent}>
+
+            <Text style={styles.modalText}>Favorites</Text>
+            
+            <View style={styles.modalExit}>
+
+              <Button title="X" onPress={() => setModalVisible(false)} />
+
+            </View>
+
+          </View>
+        </View>
+      </Modal>
+    </View>
     </View>
   );
 };
 
-const handleCellPress = (day, time) => {
-  alert(`Zelle ${day} ${time} wurde geklickt!`);
-};
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -59,25 +95,25 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   table: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
+    borderWidth: 0,
+    borderRadius: 0,
     overflow: "hidden",
-    width: "90%",
+    width: "95%",
   },
   row: {
     flexDirection: "row",
   },
   cell: {
     flex: 1,
-    padding: 10,
+    padding: 0,
     textAlign: "center",
-    borderWidth: 1,
+    borderWidth: 0,
     borderColor: "#ccc",
     fontSize: 16,
     color: "#000",
   },
   headerCell: {
+    padding: 5,
     backgroundColor: "#f0f0f0",
     fontWeight: "bold",
     color: "#000",
@@ -90,6 +126,29 @@ const styles = StyleSheet.create({
   bottomText: {
     fontSize: 16,
     color: "#333",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.3)', // Abdunkelung des Hintergrundes
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '90%',
+    height: '90%',
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalText: {
+    marginBottom: 20,
+    fontSize: 25,
+  },
+  modalExit: {
+    position: 'absolute',
+    top: 5,
+    right: 10,
   },
 });
 
