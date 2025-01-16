@@ -2,6 +2,8 @@ import axios from "axios";
 
 import { createClient } from "@supabase/supabase-js";
 
+/* -----------------------------Verbindung zur DB und API-------------------------------------- */
+
 const supabaseUrl = "https://umxefhpogivleljntkdz.supabase.co";
 const supabaseKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVteGVmaHBvZ2l2bGVsam50a2R6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4MTAzODYsImV4cCI6MjA0ODM4NjM4Nn0.wdvOxDjIddMebJBM4Qb31qIWiPvx51AojVBW29YSV7I";
@@ -18,6 +20,8 @@ const api = axios.create({
 
 export default supabase;
 
+/* -----------------------------Rezepte aus der Spoonacular-API in die Supabase-Datenbank einfügen-------------------------------------- */
+
 async function insertRecipes() {
   try {
     const response = await api.get("/complexSearch", {
@@ -27,6 +31,8 @@ async function insertRecipes() {
     const recipes = response.data.results;
 
     console.log(`${recipes.length} Rezepte erfolgreich abgerufen.`);
+
+    /* -----------------------------Überprüfen, ob ein Rezept bereits existiert-------------------------------------- */
 
     for (const recipe of recipes) {
       const { data: existingRecipes, error: checkError } = await supabase

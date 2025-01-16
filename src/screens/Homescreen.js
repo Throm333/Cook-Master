@@ -37,7 +37,9 @@ const HomeScreen = () => {
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.recipeCard}
-      onPress={() => navigation.navigate("DetailRecipe", { title: item.title })}
+      onPress={() =>
+        navigation.navigate("DetailRecipe", { title: item.title, id: item.id })
+      }
     >
       <Image source={{ uri: item.image }} style={styles.recipeImage} />
       <Text style={styles.recipeTitle}>{item.title}</Text>
