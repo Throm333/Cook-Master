@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, View, Image, Button, TextInput, ScrollView } from "react-native";
+import { StyleSheet, Text, View, Image, Button, TextInput, ScrollView, TouchableOpacity} from "react-native";
 import * as ImagePicker from 'expo-image-picker'; // Um ein Bild auzuwählen
 
 
@@ -7,6 +7,8 @@ const CreateRecipescreen = () => {
   const [newRecipe, setNewRecipe] = useState("");
   const [portions, setPortions] = useState(2); // Startwert für die Portionenanzahl
   const [image, setImage] = useState(null); // Speichert den URI des ausgewählten Bildes
+  const [ingredientInput, setIngredientInput] = useState(""); // Eingabefeld für Zutaten
+  const [ingredients, setIngredients] = useState([]); // Liste der eingegebenen Zutaten
 
   // Funktion um ein Bild aus der Galerie auswählen zu können
   const pickImage = async () => {
@@ -22,13 +24,19 @@ const CreateRecipescreen = () => {
     }
   };
 
+  // Funktion um Zutaten hinzufügen zu können
+  const addIngredient = async () => { 
+    setIngredients([]);
+    setIngredientInput(""); // Sobald etwas eingegeben wurde und aufs plus geklickt wird ist das Eingabefeld wieder leer
+  };
+
   return (
     <ScrollView style={styles.scrollContainer}>
 
       <Text style={styles.title}>Recipe Title</Text>
-      <View style={styles.titleBox}>
+      <View style={styles.box}>
         <TextInput                    // Rezepttitel
-          style={styles.titleInput}
+          style={styles.boxText}
           placeholder="What is your recipe called?"
           placeholderTextColor="#888"
           value={newRecipe.title}
@@ -54,7 +62,7 @@ const CreateRecipescreen = () => {
       )}
       
       <Text style={styles.title}>Serving size</Text>
-      <View style={styles.portionContainer}>   
+      <View style={styles.box}>   
         <Text style={styles.portionLabel}>Portions:</Text>
         <View style={styles.portionControls}>
           <Button title="-" onPress={() => setPortions(portions > 1 ? portions - 1 : 1)} />
@@ -72,15 +80,28 @@ const CreateRecipescreen = () => {
       </View>
 
       <Text style={styles.title}>Ingredients</Text>
-      <View style={styles.ingredientContainer}>
-          
+      <View style={styles.box}>
+        <TextInput                    // Rezepttitel
+          style={styles.boxText}
+          placeholder="Add an ingredient"
+          placeholderTextColor="#888"
+          value={ingredientInput}
+          onChangeText={setIngredientInput}
+        />
+
+        <TouchableOpacity style={styles.addButton} onPress={addIngredient}>
+          <Text style={styles.addButtonText}>+</Text>
+        </TouchableOpacity>
       </View>
 
 
       <Text style={styles.title}>Instructions</Text>
-      <View style={styles.instructionContainer}>
-          
-      </View>
+      <TouchableOpacity style={styles.box}>
+        <Text style={styles.boxText}>Steps</Text>
+        <View style={styles.addButton}>
+          <Text style={styles.addButtonText}>+</Text>
+        </View>
+      </TouchableOpacity>
 
         <Button                       // Button um das Rezept zu speichern
           style={styles.saveButton}
@@ -98,24 +119,44 @@ const styles = StyleSheet.create({
     padding: 16,
   },
 
-  titleBox: {
+  box: {                  // Für Title, Ingredients und Instructions
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 8,
-    borderWidth: 1,
+    justifyContent: "space-between",
     padding: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
     marginBottom: 16,
-    shadowColor: "#000",
+    height: 60,
+    shadowColor: "#000", // Optional: add shadow for better visual appearance
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
     shadowOffset: { width: 0, height: 2 },
   },
-
-  titleInput: {
+  
+  boxText: {
     flex: 1,
     fontSize: 16,
     color: "#000",
+  },
+
+  addButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#4caf50",
+    borderRadius: 50,
+    width: 30,
+    height: 30,
+  },
+
+  addButtonText: {
+    fontSize: 21,
+    color: "#fff",
+    fontWeight: "bold",
+    lineHeight: 21,
+    textAlign: "center",    // Button ist nicht ganz mittig, später korrigieren!!!!!
   },
 
   title: {
@@ -129,6 +170,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 8,
     borderWidth: 1,
+    borderColor: "#ccc",
     marginBottom: 16,
     width: "100%",
     height: 300,
@@ -148,21 +190,6 @@ const styles = StyleSheet.create({
   buttonContainer: {
     alignItems: "center",
     marginBottom: 16,
-  },
-
-  portionContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between", 
-    padding: 10,
-    marginBottom: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-    shadowOffset: { width: 0, height: 2 },
   },
 
   portionLabel: {
