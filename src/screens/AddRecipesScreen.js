@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, Text, View, Image, Button, TextInput, ScrollView, TouchableOpacity} from "react-native";
+import {StyleSheet, Text, View, Image, Button, TextInput, ScrollView, TouchableOpacity} from "react-native";
 import * as ImagePicker from 'expo-image-picker'; // Um ein Bild auzuwählen
 
 
@@ -28,6 +28,10 @@ const CreateRecipescreen = () => {
   const addIngredient = async () => { 
     setIngredients([]);
     setIngredientInput(""); // Sobald etwas eingegeben wurde und aufs plus geklickt wird ist das Eingabefeld wieder leer
+  };
+
+  const removeIngredient = () => {
+    setIngredients();
   };
 
   return (
@@ -157,6 +161,22 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     lineHeight: 21,
     textAlign: "center",    // Button ist nicht ganz mittig, später korrigieren!!!!!
+  },
+
+  removeButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#ff5252",
+    borderRadius: 50,
+    width: 30,
+    height: 30,
+  },
+  removeButtonText: {
+    fontSize: 21,
+    color: "#fff",
+    fontWeight: "bold",
+    lineHeight: 21,
+    textAlign: "center",
   },
 
   title: {
