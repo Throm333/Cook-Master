@@ -29,7 +29,7 @@ const AddRecipesScreen = () => {
   // Funktion um Zutaten hinzuzufügen
   const addIngredient = () => { 
     if (ingredientInput.quantity.trim() && ingredientInput.name.trim()) {  // Entfernt Leerzeichen am Anfang und Ende "   Apfel   " -> "Apfel", leere Eingaben (nur Leerzeichen) werden nicht angenommen
-      setIngredients([...ingredients, ingredientInput]); // Spread-Operator erzeugt eine Kopie des Arrays ingredients
+      setIngredients([...ingredients, ingredientInput]); 
       setIngredientInput({ quantity: "", unit: "ml", name: "" }); // Leert das Eingabefeld, nachdem die Zutat hinzugefügt wurde
     }
   };
@@ -209,7 +209,6 @@ const AddRecipesScreen = () => {
     </ScrollView>
   );
 };
-// <Image source={require('../../assets/images/pan.png')} style={styles.saveImage} resizeMode="contain"/>
 const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
@@ -363,12 +362,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 15,
     paddingHorizontal: 40,
-    alignSelf: "center", // This will center the button horizontally
-    marginTop: 16, // Adds some space above the button, adjust as needed
+    alignSelf: "center",
+    marginTop: 16, 
   },
 
   saveButtonText: {
-    fontSize: 16,  // Increase font size if needed
+    fontSize: 16,
     color: "#fff",
     textAlign: "center",
   },  
