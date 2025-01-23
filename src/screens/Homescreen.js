@@ -10,9 +10,11 @@ import {
 } from "react-native";
 import supabase from "../data/API_Config";
 import { useNavigation } from "@react-navigation/native";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 const HomeScreen = () => {
   const [recipes, setRecipes] = useState([]);
+  const [favorites, setFavorites] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
 
   const navigation = useNavigation();
@@ -22,7 +24,7 @@ const HomeScreen = () => {
       const { data, error } = await supabase
         .from("recipes")
         .select("*")
-        .limit(15);
+        .limit(16);
       if (error) throw error;
       setRecipes(data || []);
     } catch (error) {
@@ -34,12 +36,31 @@ const HomeScreen = () => {
     fetchRecipes();
   }, []);
 
+  const toggleFavorite = (id) => {
+    setFavorites((prevFavorites) => ({
+      ...prevFavorites,
+      [id]: !prevFavorites[id],
+    }));
+  };
+
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.recipeCard}
-      onPress={() => navigation.navigate("DetailRecipe", { title: item.title })}
+      onPress={() =>
+        navigation.navigate("DetailRecipe", { title: item.title, id: item.id })
+      }
     >
       <Image source={{ uri: item.image }} style={styles.recipeImage} />
+      <TouchableOpacity
+        onPress={() => toggleFavorite(item.id)}
+        style={styles.heartIcon}
+      >
+        <Ionicons
+          name="heart"
+          size={24}
+          color={favorites[item.id] ? "tomato" : "gray"}
+        />
+      </TouchableOpacity>
       <Text style={styles.recipeTitle}>{item.title}</Text>
     </TouchableOpacity>
   );
@@ -133,6 +154,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#333",
     textAlign: "center",
+  },
+  heartIcon: {
+    position: "absolute",
+    right: 2,
+    top: 2,
   },
 });
 
