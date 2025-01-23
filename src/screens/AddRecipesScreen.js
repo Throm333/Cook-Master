@@ -3,7 +3,7 @@ import {StyleSheet, Text, View, Image, Button, TextInput, ScrollView, TouchableO
 import * as ImagePicker from 'expo-image-picker'; // Um ein Bild auzuwählen
 import DropDownPicker from 'react-native-dropdown-picker'
 
-const CreateRecipescreen = () => {
+const AddRecipesScreen = () => {
   const [newRecipe, setNewRecipe] = useState("");
   const [portions, setPortions] = useState(2); // Startwert für die Portionenanzahl ist 2
   const [image, setImage] = useState(null); // Speichert den URI des ausgewählten Bildes
@@ -380,4 +380,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default CreateRecipescreen;
+export default AddRecipesScreen;
