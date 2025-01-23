@@ -25,7 +25,7 @@ export default supabase;
 async function insertRecipes() {
   try {
     const response = await api.get("/complexSearch", {
-      params: { number: 15 },
+      params: { number: 16 },
     });
 
     const recipes = response.data.results;

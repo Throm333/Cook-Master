@@ -1,34 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
-import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import supabase from "../data/API_Config";
-import { ScrollView } from "react-native-gesture-handler";
-
-const Tab = createMaterialTopTabNavigator();
-
-const IngredientsScreen = ({ ingredients }) => (
-  <View style={styles.tabContainer}>
-    {ingredients?.length > 0 ? (
-      ingredients.map((ingredient, index) => (
-        <Text key={index} style={styles.ingredientText}>
-          • {ingredient.amount} {ingredient.name}
-        </Text>
-      ))
-    ) : (
-      <Text style={styles.ingredientText}>Keine Zutaten verfügbar</Text>
-    )}
-  </View>
-);
-
-const InstructionsScreen = ({ instructions }) => (
-  <View style={styles.tabContainer}>
-    <Text style={styles.instructionText}>
-      {instructions || "Keine Anleitung verfügbar"}
-    </Text>
-  </View>
-);
 
 const DetailRecipeScreen = () => {
   const [recipe, setRecipe] = useState({});
@@ -62,7 +43,7 @@ const DetailRecipeScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}
@@ -73,7 +54,9 @@ const DetailRecipeScreen = () => {
         <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
       )}
       <View style={styles.contentContainer}>
-        <Text style={styles.title}>{recipe.title}</Text>
+        <Text style={styles.title}>
+          {recipe.title || "Kein Titel verfügbar"}
+        </Text>
         <View style={styles.categoryContainer}>
           {recipe.recipe_categories?.map((category, index) => (
             <Text key={index} style={styles.categoryText}>
@@ -81,31 +64,33 @@ const DetailRecipeScreen = () => {
             </Text>
           ))}
         </View>
-
-        <Tab.Navigator
-          screenOptions={{
-            tabBarActiveTintColor: "tomato",
-            tabBarIndicatorStyle: { backgroundColor: "tomato" },
-            tabBarLabelStyle: { fontSize: 14, fontWeight: "bold" },
-          }}
-        >
-          <Tab.Screen
-            name="Zutaten"
-            children={() => (
-              <IngredientsScreen ingredients={recipe.ingredients} />
-            )}
-          />
-          <Tab.Screen
-            name="Anleitung"
-            children={() => (
-              <InstructionsScreen instructions={recipe.instructions} />
-            )}
-          />
-        </Tab.Navigator>
+        <Section title="Zutaten">
+          {recipe.ingredients?.length > 0 ? (
+            recipe.ingredients.map((ingredient, index) => (
+              <Text key={index} style={styles.ingredientText}>
+                • {ingredient.amount} {ingredient.name}
+              </Text>
+            ))
+          ) : (
+            <Text style={styles.ingredientText}>Keine Zutaten verfügbar</Text>
+          )}
+        </Section>
+        <Section title="Anleitung">
+          <Text style={styles.instructionText}>
+            {recipe.instructions || "Keine Anleitung verfügbar"}
+          </Text>
+        </Section>
       </View>
-    </View>
+    </ScrollView>
   );
 };
+
+const Section = ({ title, children }) => (
+  <View style={styles.section}>
+    <Text style={styles.sectionTitle}>{title}</Text>
+    {children}
+  </View>
+);
 
 const styles = StyleSheet.create({
   container: {
@@ -127,7 +112,6 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
   contentContainer: {
-    flex: 1,
     padding: 20,
   },
   title: {
@@ -151,9 +135,14 @@ const styles = StyleSheet.create({
     marginRight: 10,
     marginBottom: 5,
   },
-  tabContainer: {
-    flex: 1,
-    padding: 10,
+  section: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 10,
   },
   ingredientText: {
     fontSize: 16,
