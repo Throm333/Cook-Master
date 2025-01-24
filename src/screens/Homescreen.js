@@ -36,11 +36,39 @@ const HomeScreen = () => {
     fetchRecipes();
   }, []);
 
-  const toggleFavorite = (id) => {
-    setFavorites((prevFavorites) => ({
-      ...prevFavorites,
-      [id]: !prevFavorites[id],
-    }));
+  const insertFavorite = async (id) => {
+    try {
+      const isFavorite = favorites[id];
+
+      if (isFavorite) {
+        const { error } = await supabase
+          .from("favorites")
+          .delete()
+          .eq("recipe_id", id);
+
+        if (error) throw error;
+
+        console.log(`Rezept mit ID ${id} aus den Favoriten entfernt.`);
+      } else {
+        const { error } = await supabase
+          .from("favorites")
+          .insert({ recipe_id: id });
+
+        if (error) throw error;
+
+        console.log(`Rezept mit ID ${id} zu den Favoriten hinzugefügt.`);
+      }
+
+      setFavorites((prevFavorites) => ({
+        ...prevFavorites,
+        [id]: !prevFavorites[id],
+      }));
+    } catch (error) {
+      console.error(
+        "Fehler beim Hinzufügen/Entfernen aus den Favoriten:",
+        error.message
+      );
+    }
   };
 
   const renderItem = ({ item }) => (
@@ -52,7 +80,7 @@ const HomeScreen = () => {
     >
       <Image source={{ uri: item.image }} style={styles.recipeImage} />
       <TouchableOpacity
-        onPress={() => toggleFavorite(item.id)}
+        onPress={() => insertFavorite(item.id)}
         style={styles.heartIcon}
       >
         <Ionicons
