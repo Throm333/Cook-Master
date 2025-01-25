@@ -47,14 +47,14 @@ async function insertRecipes() {
         );
         continue;
       }
+      console.log("Rezeptdetails aus der API:", recipeDetails);
 
-      /* if (existingRecipes.length > 0) {
+      if (existingRecipes.length > 0) {
         console.log(
           `Rezept "${recipe.title}" existiert bereits, wird nicht hinzugefügt.`
         );
         continue;
       }
-        */
 
       const recipeDetailsResponse = await api.get(`/${recipe.id}/information`);
       const recipeDetails = recipeDetailsResponse.data;
