@@ -1,47 +1,70 @@
-const axios = require("axios");
-const { createClient } = require("@supabase/supabase-js");
+import axios from "axios";
+
+import { createClient } from "@supabase/supabase-js";
+
+/* -----------------------------Verbindung zur DB und API-------------------------------------- */
 
 const supabaseUrl = "https://umxefhpogivleljntkdz.supabase.co";
 const supabaseKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVteGVmaHBvZ2l2bGVsam50a2R6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMjgxMDM4NiwiZXhwIjoyMDQ4Mzg2Mzg2fQ.C7W5--V-arhbd_d6QnOj9RXFzIFJTCisXPFwDb11eCc";
-
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVteGVmaHBvZ2l2bGVsam50a2R6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4MTAzODYsImV4cCI6MjA0ODM4NjM4Nn0.wdvOxDjIddMebJBM4Qb31qIWiPvx51AojVBW29YSV7I";
 const spoonacularApiKey = "a4f80292b4794312bab3783a88014418";
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function fetchInsertRecipes() {
+const api = axios.create({
+  baseURL: "https://api.spoonacular.com/recipes",
+  params: {
+    apiKey: spoonacularApiKey,
+  },
+});
+
+export default supabase;
+
+/* -----------------------------Rezepte aus der Spoonacular-API in die Supabase-Datenbank einfügen-------------------------------------- */
+
+async function insertRecipes() {
   try {
-    const response = await axios.get(
-      "https://api.spoonacular.com/recipes/complexSearch",
-      {
-        params: {
-          number: 20,
-          apiKey: spoonacularApiKey,
-        },
-      }
-    );
+    const response = await api.get("/complexSearch", {
+      params: { number: 16 },
+    });
 
     const recipes = response.data.results;
 
-    for (const recipe of recipes) {
-      const recipeDetailsResponse = await axios.get(
-        `https://api.spoonacular.com/recipes/${recipe.id}/information`,
-        {
-          params: {
-            apiKey: spoonacularApiKey,
-          },
-        }
-      );
+    console.log(`${recipes.length} Rezepte erfolgreich abgerufen.`);
 
+    /* -----------------------------Überprüfen, ob ein Rezept bereits existiert-------------------------------------- */
+
+    for (const recipe of recipes) {
+      const { data: existingRecipes, error: checkError } = await supabase
+        .from("recipes")
+        .select("title")
+        .eq("title", recipe.title);
+
+      if (checkError) {
+        console.error(
+          `Fehler beim Überprüfen des Rezepts "${recipe.title}":`,
+          checkError.message
+        );
+        continue;
+      }
+
+      if (existingRecipes.length > 0) {
+        console.log(
+          `Rezept "${recipe.title}" existiert bereits, wird nicht hinzugefügt.`
+        );
+        continue;
+      }
+
+      const recipeDetailsResponse = await api.get(`/${recipe.id}/information`);
       const recipeDetails = recipeDetailsResponse.data;
 
       /* -----------------------------Zutaten, Kategorie und Anleitung werden extrahiert-------------------------------------- */
 
       const ingredients = Array.isArray(recipeDetails.extendedIngredients)
         ? recipeDetails.extendedIngredients.map((ing) => ({
-            amount: `${ing.amount} ${ing.unit}`,
-            name: ing.name,
-          }))
+          amount: `${ing.amount} ${ing.unit}`,
+          name: ing.name,
+        }))
         : [];
 
       const categories = Array.isArray(recipeDetails.dishTypes)
@@ -52,33 +75,9 @@ async function fetchInsertRecipes() {
         recipeDetails.instructions ||
         (recipeDetails.analyzedInstructions?.length > 0
           ? recipeDetails.analyzedInstructions[0].steps
-              .map((step) => step.step)
-              .join(" ")
+            .map((step) => step.step)
+            .join(" ")
           : "Keine Anleitung verfügbar");
-
-      /* --------------------------Überprüfen, ob das Rezept bereits existiert-----------------------------------------------*/
-
-      const { data: existingRecipe, error: selectError } = await supabase
-        .from("recipes")
-        .select("*")
-        .eq("title", recipeDetails.title)
-        .eq("instructions", instructions)
-        .single();
-
-      if (selectError && selectError.code !== "PGRST116") {
-        console.error(
-          "Fehler beim Überprüfen der Datenbank:",
-          selectError.message
-        );
-        continue;
-      }
-
-      if (existingRecipe) {
-        console.log(
-          `Rezept "${recipeDetails.title}" existiert bereits, wird nicht hinzugefügt.`
-        );
-        continue; // Gehe zum nächsten Rezept
-      }
 
       /* --------------------------Rezepte in Datenbank Tabelle recipes speichern------------------------------------------*/
 
@@ -191,4 +190,4 @@ async function fetchInsertRecipes() {
   }
 }
 
-fetchInsertRecipes();
+insertRecipes();
