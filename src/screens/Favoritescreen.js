@@ -1,16 +1,38 @@
-import React, { useState, useEffect } from "react"
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Modal, Button } from "react-native"
-import { Ionicons } from "@expo/vector-icons"
-import supabase from "../data/API_Config"
+import React, { useState, useEffect } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  Modal,
+  Button,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import supabase from "../data/API_Config";
 
 const Favoritescreen = () => {
-  const [favorites, setFavorites] = useState([])
-  const [selectedRecipe, setSelectedRecipe] = useState(null)
-  const [modalVisible, setModalVisible] = useState(false)
+  const [favorites, setFavorites] = useState([]);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
-    fetchFavorites()
-  }, [])
+    fetchFavorites();
+
+    const realTime = supabase
+      .channel("favorites_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "favorites" },
+        handleFavoritesChange
+      )
+      .subscribe();
+
+    return () => {
+      realTime.unsubscribe();
+    };
+  }, []);
 
   const fetchFavorites = async () => {
     try {
@@ -21,50 +43,59 @@ const Favoritescreen = () => {
             title,
             image
           )
-        `)
+        `);
 
-      if (error) throw error
+      if (error) throw error;
 
       const formattedFavorites = data.map((fav) => ({
         id: fav.recipes.id,
         name: fav.recipes.title,
         image: fav.recipes.image,
         isFavorite: true,
-      }))
+      }));
 
-      setFavorites(formattedFavorites)
+      setFavorites(formattedFavorites);
     } catch (error) {
-      console.error("Error fetching favorites:", error.message)
+      console.error("Error fetching favorites:", error.message);
     }
-  }
+  };
+
+  const handleFavoritesChange = () => {
+    fetchFavorites();
+  };
 
   const openModal = (recipe) => {
-    setSelectedRecipe(recipe)
-    setModalVisible(true)
-  }
+    setSelectedRecipe(recipe);
+    setModalVisible(true);
+  };
 
   const closeModal = () => {
-    setModalVisible(false)
-    setSelectedRecipe(null)
-  }
+    setModalVisible(false);
+    setSelectedRecipe(null);
+  };
 
   const handleRemoveFavorite = async (id) => {
     try {
-      const { error } = await supabase.from("favorites").delete().eq("recipe_id", id)
+      const { error } = await supabase
+        .from("favorites")
+        .delete()
+        .eq("recipe_id", id);
 
-      if (error) throw error
-
-      setFavorites(favorites.filter((recipe) => recipe.id !== id))
+      if (error) throw error;
     } catch (error) {
-      console.error("Error removing favorite:", error.message)
+      console.error("Error removing favorite:", error.message);
     }
-  }
+  };
 
   return (
     <View style={styles.container}>
       <ScrollView style={styles.recipeList}>
         {favorites.map((recipe) => (
-          <TouchableOpacity key={recipe.id} style={styles.recipeItem} onPress={() => openModal(recipe)}>
+          <TouchableOpacity
+            key={recipe.id}
+            style={styles.recipeItem}
+            onPress={() => openModal(recipe)}
+          >
             <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
             <Text style={styles.recipeName}>{recipe.name}</Text>
             <TouchableOpacity onPress={() => handleRemoveFavorite(recipe.id)}>
@@ -74,12 +105,20 @@ const Favoritescreen = () => {
         ))}
       </ScrollView>
 
-      <Modal visible={modalVisible} transparent={true} animationType="slide" onRequestClose={closeModal}>
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={closeModal}
+      >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             {selectedRecipe && (
               <>
-                <Image source={{ uri: selectedRecipe.image }} style={styles.modalImage} />
+                <Image
+                  source={{ uri: selectedRecipe.image }}
+                  style={styles.modalImage}
+                />
                 <Text style={styles.modalTitle}>{selectedRecipe.name}</Text>
                 <Text style={styles.modalDescription}>Rezeptdetails</Text>
                 <Button title="Schließen" onPress={closeModal} />
@@ -89,8 +128,8 @@ const Favoritescreen = () => {
         </View>
       </Modal>
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -163,7 +202,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
   },
-})
+});
 
-export default Favoritescreen
-
+export default Favoritescreen;
