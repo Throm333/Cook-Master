@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import supabase from "../data/API_Config";
 import { useNavigation } from "@react-navigation/native";
-import Ionicons from "react-native-vector-icons/Ionicons";
+import { debounce } from "lodash";
 
 const HomeScreen = () => {
   const [recipes, setRecipes] = useState([]);
@@ -19,12 +19,15 @@ const HomeScreen = () => {
 
   const navigation = useNavigation();
 
-  const fetchRecipes = async () => {
+  const fetchRecipes = async (query = "") => {
     try {
-      const { data, error } = await supabase
-        .from("recipes")
-        .select("*")
-        .limit(16);
+      let supabaseQuery = supabase.from("recipes").select("*").limit(16);
+
+      if (query) {
+        supabaseQuery = supabaseQuery.ilike("title", `%${query}%`);
+      }
+
+      const { data, error } = await supabaseQuery;
       if (error) throw error;
       setRecipes(data || []);
     } catch (error) {
@@ -32,16 +35,18 @@ const HomeScreen = () => {
     }
   };
 
+  const debouncedFetchRecipes = useCallback(
+    debounce((query) => fetchRecipes(query), 300),
+    []
+  );
+
   useEffect(() => {
     fetchRecipes();
   }, []);
 
-  const toggleFavorite = (id) => {
-    setFavorites((prevFavorites) => ({
-      ...prevFavorites,
-      [id]: !prevFavorites[id],
-    }));
-  };
+  useEffect(() => {
+    debouncedFetchRecipes(searchQuery);
+  }, [searchQuery, debouncedFetchRecipes]);
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
@@ -73,7 +78,7 @@ const HomeScreen = () => {
       <FlatList
         data={recipes}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         numColumns={2}
         contentContainerStyle={styles.recipeList}
         showsVerticalScrollIndicator={false}
