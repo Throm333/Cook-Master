@@ -1,64 +1,62 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-} from "react-native";
-import supabase from "../data/API_Config";
-import { useNavigation } from "@react-navigation/native";
-import { debounce } from "lodash";
+import React, { useState, useEffect, useCallback } from "react"
+import { View, Text, FlatList, TextInput, StyleSheet, TouchableOpacity, Image } from "react-native"
+import supabase from "../data/API_Config"
+import { useNavigation } from "@react-navigation/native"
+import Ionicons from "react-native-vector-icons/Ionicons"
+import { debounce } from "lodash"
 
 const HomeScreen = () => {
-  const [recipes, setRecipes] = useState([]);
-  const [favorites, setFavorites] = useState({});
-  const [searchQuery, setSearchQuery] = useState("");
+  const [recipes, setRecipes] = useState([])
+  const [favorites, setFavorites] = useState({})
+  const [searchQuery, setSearchQuery] = useState("")
 
-  const navigation = useNavigation();
+  const navigation = useNavigation()
 
   const fetchRecipes = async (query = "") => {
     try {
-      let supabaseQuery = supabase.from("recipes").select("*").limit(16);
+      let supabaseQuery = supabase.from("recipes").select("*").limit(16)
 
       if (query) {
-        supabaseQuery = supabaseQuery.ilike("title", `%${query}%`);
+        supabaseQuery = supabaseQuery.ilike("title", `%${query}%`)
       }
 
-      const { data, error } = await supabaseQuery;
-      if (error) throw error;
-      setRecipes(data || []);
+      const { data, error } = await supabaseQuery
+      if (error) throw error
+      setRecipes(data || [])
     } catch (error) {
-      console.error("Fehler beim Abrufen der Rezepte:", error.message);
+      console.error("Fehler beim Abrufen der Rezepte:", error.message)
     }
-  };
+  }
 
   const debouncedFetchRecipes = useCallback(
     debounce((query) => fetchRecipes(query), 300),
-    []
-  );
+    [],
+  )
 
   useEffect(() => {
-    fetchRecipes();
-  }, []);
+    fetchRecipes()
+  }, [])
 
   useEffect(() => {
-    debouncedFetchRecipes(searchQuery);
-  }, [searchQuery, debouncedFetchRecipes]);
+    debouncedFetchRecipes(searchQuery)
+  }, [searchQuery, debouncedFetchRecipes]) // Added debouncedFetchRecipes to dependencies
+
+  const toggleFavorite = (id) => {
+    setFavorites((prevFavorites) => ({
+      ...prevFavorites,
+      [id]: !prevFavorites[id],
+    }))
+  }
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.recipeCard}
-      onPress={() =>
-        navigation.navigate("DetailRecipe", { title: item.title, id: item.id })
-      }
+      onPress={() => navigation.navigate("DetailRecipe", { title: item.title, id: item.id })}
     >
       <Image source={{ uri: item.image }} style={styles.recipeImage} />
       <Text style={styles.recipeTitle}>{item.title}</Text>
     </TouchableOpacity>
-  );
+  )
 
   return (
     <View style={styles.container}>
@@ -81,11 +79,12 @@ const HomeScreen = () => {
         keyExtractor={(item) => item.id.toString()}
         numColumns={2}
         contentContainerStyle={styles.recipeList}
+        columnWrapperStyle={styles.row}
         showsVerticalScrollIndicator={false}
       />
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -125,10 +124,16 @@ const styles = StyleSheet.create({
   },
   recipeList: {
     paddingTop: 10,
+    paddingHorizontal: 5,
+  },
+  row: {
+    flex: 1,
+    justifyContent: "flex-start",
   },
   recipeCard: {
-    flex: 1,
-    margin: 5,
+    flex: 0,
+    width: "48%",
+    margin: "1%",
     backgroundColor: "#fff",
     borderRadius: 10,
     overflow: "hidden",
@@ -155,6 +160,7 @@ const styles = StyleSheet.create({
     right: 2,
     top: 2,
   },
-});
+})
 
-export default HomeScreen;
+export default HomeScreen
+
