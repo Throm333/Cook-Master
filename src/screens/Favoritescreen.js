@@ -8,11 +8,13 @@ import {
   Image,
   Modal,
   Button,
+  TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import supabase from "../data/API_Config";
 
 const Favoritescreen = () => {
+  const [searchQuery, setSearchQuery] = useState("");
   const [favorites, setFavorites] = useState([]);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -87,9 +89,25 @@ const Favoritescreen = () => {
     }
   };
 
+  const handleSearch = () => {
+    console.log("Search query:", searchQuery);
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView style={styles.recipeList}>
+        <View style={styles.searchBar}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Suche nach Rezepten..."
+            placeholderTextColor="#888"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          <TouchableOpacity onPress={handleSearch}>
+            <Ionicons name="search" size={24} color="#FF6347" />
+          </TouchableOpacity>
+        </View>
         {favorites.map((recipe) => (
           <TouchableOpacity
             key={recipe.id}
@@ -132,10 +150,11 @@ const Favoritescreen = () => {
 };
 
 const styles = StyleSheet.create({
+  // Same styles as in your code
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingTop: 50,
+    //paddingTop: 50,
   },
   recipeList: {
     flex: 1,
@@ -167,40 +186,24 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#333",
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
+  searchBar: {
+    flexDirection: "row",
     alignItems: "center",
-  },
-  modalContent: {
-    width: "80%",
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 20,
-    alignItems: "center",
+    backgroundColor: "#f0f0f0",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginBottom: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 5,
+    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
   },
-  modalImage: {
-    width: 150,
-    height: 150,
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  modalDescription: {
+  searchInput: {
+    flex: 1,
     fontSize: 16,
-    color: "#555",
-    textAlign: "center",
-    marginBottom: 20,
+    color: "#333",
   },
 });
 
