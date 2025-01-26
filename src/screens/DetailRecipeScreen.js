@@ -12,7 +12,7 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import supabase from "../data/API_Config";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-import { WebView } from "react-native-webview";
+
 
 const Tab = createMaterialTopTabNavigator();
 const windowHeight = Dimensions.get("window").height;

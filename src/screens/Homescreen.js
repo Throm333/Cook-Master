@@ -51,16 +51,6 @@ const HomeScreen = () => {
       }
     >
       <Image source={{ uri: item.image }} style={styles.recipeImage} />
-      <TouchableOpacity
-        onPress={() => toggleFavorite(item.id)}
-        style={styles.heartIcon}
-      >
-        <Ionicons
-          name="heart"
-          size={24}
-          color={favorites[item.id] ? "tomato" : "gray"}
-        />
-      </TouchableOpacity>
       <Text style={styles.recipeTitle}>{item.title}</Text>
     </TouchableOpacity>
   );
