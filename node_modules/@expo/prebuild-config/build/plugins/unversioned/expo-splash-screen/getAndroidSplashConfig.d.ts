@@ -8,10 +8,6 @@ export type SplashScreenConfig = {
     image?: string;
     backgroundColor?: string;
     resizeMode: 'contain' | 'cover' | 'native';
-    drawable?: {
-        icon: string;
-        darkIcon?: string;
-    };
     dark?: {
         backgroundColor?: string;
         xxxhdpi?: string;
