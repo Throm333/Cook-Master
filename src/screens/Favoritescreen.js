@@ -1,36 +1,67 @@
-import React, { useState } from "react";
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Modal, Button } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import React, { useState, useEffect } from "react"
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Modal, Button } from "react-native"
+import { Ionicons } from "@expo/vector-icons"
+import supabase from "../data/API_Config"
 
 const Favoritescreen = () => {
-  const [favorites, setFavorites] = useState([
+  const [favorites, setFavorites] = useState([])
+  const [selectedRecipe, setSelectedRecipe] = useState(null)
+  const [modalVisible, setModalVisible] = useState(false)
 
-    { id: 1, name: "Lasagne", isFavorite: true, image: "https://www.malteskitchen.de/wp-content/uploads/2022/09/lasagne-bolognese-8.jpg" },
-    { id: 2, name: "Nudelauflauf", isFavorite: true, image: "https://images.mrcook.app/recipe-image/018dc649-76b5-7b1d-a2d0-d0671570a970" },
-    { id: 3, name: "Reis mit Hähnchen", isFavorite: true, image: "https://lh3.googleusercontent.com/proxy/F78G0gduWweAl_5m9SRcljNWY61k_bmz_Or6Q1pb6I2WwiOEen9kpiwRfLkoNTjcMdg_M2yP0oLgDzHcn198nK7XDiQvo4bSnDwOPSlToQJ1GfOchPplPvKH1ffgADXid963lyE" },
-    { id: 4, name: "Steak", isFavorite: true, image: "https://www.adelmayer.de/wp-content/uploads/2024/02/bbnm.png" },
-  ]);
+  useEffect(() => {
+    fetchFavorites()
+  }, [])
 
-  const [selectedRecipe, setSelectedRecipe] = useState(null); // Rezept für das Modal
-  const [modalVisible, setModalVisible] = useState(false); // Steuerung der Modal-Sichtbarkeit
+  const fetchFavorites = async () => {
+    try {
+      const { data, error } = await supabase.from("favorites").select(`
+          recipe_id,
+          recipes (
+            id,
+            title,
+            image
+          )
+        `)
+
+      if (error) throw error
+
+      const formattedFavorites = data.map((fav) => ({
+        id: fav.recipes.id,
+        name: fav.recipes.title,
+        image: fav.recipes.image,
+        isFavorite: true,
+      }))
+
+      setFavorites(formattedFavorites)
+    } catch (error) {
+      console.error("Error fetching favorites:", error.message)
+    }
+  }
 
   const openModal = (recipe) => {
-    setSelectedRecipe(recipe);
-    setModalVisible(true);
-  };
+    setSelectedRecipe(recipe)
+    setModalVisible(true)
+  }
 
   const closeModal = () => {
-    setModalVisible(false);
-    setSelectedRecipe(null);
-  };
+    setModalVisible(false)
+    setSelectedRecipe(null)
+  }
 
-  const handleRemoveFavorite = (id) => {
-    setFavorites(favorites.filter((recipe) => recipe.id !== id));
-  };
+  const handleRemoveFavorite = async (id) => {
+    try {
+      const { error } = await supabase.from("favorites").delete().eq("recipe_id", id)
+
+      if (error) throw error
+
+      setFavorites(favorites.filter((recipe) => recipe.id !== id))
+    } catch (error) {
+      console.error("Error removing favorite:", error.message)
+    }
+  }
 
   return (
     <View style={styles.container}>
-      {/* Rezeptliste */}
       <ScrollView style={styles.recipeList}>
         {favorites.map((recipe) => (
           <TouchableOpacity key={recipe.id} style={styles.recipeItem} onPress={() => openModal(recipe)}>
@@ -43,22 +74,14 @@ const Favoritescreen = () => {
         ))}
       </ScrollView>
 
-      {/* Pop-up Modal */}
-      <Modal
-        visible={modalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={closeModal}
-      >
+      <Modal visible={modalVisible} transparent={true} animationType="slide" onRequestClose={closeModal}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             {selectedRecipe && (
               <>
                 <Image source={{ uri: selectedRecipe.image }} style={styles.modalImage} />
                 <Text style={styles.modalTitle}>{selectedRecipe.name}</Text>
-                <Text style={styles.modalDescription}>
-                  Rezeptdetails
-                </Text>
+                <Text style={styles.modalDescription}>Rezeptdetails</Text>
                 <Button title="Schließen" onPress={closeModal} />
               </>
             )}
@@ -66,8 +89,8 @@ const Favoritescreen = () => {
         </View>
       </Modal>
     </View>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -140,6 +163,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
   },
-});
+})
 
-export default Favoritescreen;
+export default Favoritescreen
+
