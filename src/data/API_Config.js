@@ -62,9 +62,9 @@ async function insertRecipes() {
 
       const ingredients = Array.isArray(recipeDetails.extendedIngredients)
         ? recipeDetails.extendedIngredients.map((ing) => ({
-            amount: `${ing.amount} ${ing.unit}`,
-            name: ing.name,
-          }))
+          amount: `${ing.amount} ${ing.unit}`,
+          name: ing.name,
+        }))
         : [];
 
       const categories = Array.isArray(recipeDetails.dishTypes)
@@ -75,8 +75,8 @@ async function insertRecipes() {
         recipeDetails.instructions ||
         (recipeDetails.analyzedInstructions?.length > 0
           ? recipeDetails.analyzedInstructions[0].steps
-              .map((step) => step.step)
-              .join(" ")
+            .map((step) => step.step)
+            .join(" ")
           : "Keine Anleitung verfügbar");
 
       /* --------------------------Rezepte in Datenbank Tabelle recipes speichern------------------------------------------*/
