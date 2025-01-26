@@ -1,11 +1,11 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
-import CreateRecipescreen from "../screens/CreateRecipescreen";
+import AddRecipesScreen from "../screens/AddRecipesScreen";
 import Weekplanerscreen from "../screens/Weekplanerscreen";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import Homescreen from "../screens/Homescreen";
 import Favoritescreen from "../screens/Favoritescreen";
+import HomeStack from "./HomeStack";
 
 const Tab = createBottomTabNavigator();
 
@@ -33,10 +33,10 @@ export default function AppNavigation() {
           tabBarInactiveTintColor: "gray",
         })}
       >
-        <Tab.Screen name="Home" component={Homescreen} />
+        <Tab.Screen name="Home" component={HomeStack} />
         <Tab.Screen name="Favorites" component={Favoritescreen} />
         <Tab.Screen name="Planner" component={Weekplanerscreen} />
-        <Tab.Screen name="Create Recipe" component={CreateRecipescreen} />
+        <Tab.Screen name="Create Recipe" component={AddRecipesScreen} />
       </Tab.Navigator>
     </NavigationContainer>
   );
