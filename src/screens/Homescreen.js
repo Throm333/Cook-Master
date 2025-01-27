@@ -1,21 +1,46 @@
-import React from "react"
-import { View, Text, FlatList, TextInput, StyleSheet, TouchableOpacity, Image } from "react-native"
-import { useNavigation } from "@react-navigation/native"
-import { HomeController } from "../controller/HomeController"
+import React from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { HomeController } from "../controller/HomeController";
 
 const HomeScreen = () => {
-  const navigation = useNavigation()
-  const { recipes, favorites, searchQuery, setSearchQuery, toggleFavorite } = HomeController()
+  const navigation = useNavigation();
+  const {
+    recipes,
+    favorites,
+    searchQuery,
+    isLoading,
+    setSearchQuery,
+    toggleFavorite,
+  } = HomeController();
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.recipeCard}
-      onPress={() => navigation.navigate("DetailRecipe", { title: item.title, id: item.id })}
+      onPress={() =>
+        navigation.navigate("DetailRecipe", { title: item.title, id: item.id })
+      }
     >
       <Image source={{ uri: item.image }} style={styles.recipeImage} />
       <Text style={styles.recipeTitle}>{item.title}</Text>
+      {/* <TouchableOpacity
+        style={styles.heartIcon}
+        onPress={() => toggleFavorite(item.id)}
+      >
+        <Text>{favorites[item.id] ? "❤️" : "🤍"}</Text>
+      </TouchableOpacity>
+     */}
     </TouchableOpacity>
-  )
+  );
 
   return (
     <View style={styles.container}>
@@ -25,25 +50,31 @@ const HomeScreen = () => {
           placeholder="Suche nach Rezepten..."
           placeholderTextColor="#999"
           value={searchQuery}
-          onChangeText={(text) => setSearchQuery(text)}
+          onChangeText={setSearchQuery}
         />
         <TouchableOpacity style={styles.searchIconContainer}>
           <Text style={styles.searchIcon}>🔍</Text>
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={recipes}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-        numColumns={2}
-        contentContainerStyle={styles.recipeList}
-        columnWrapperStyle={styles.row}
-        showsVerticalScrollIndicator={false}
-      />
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007BFF" />
+        </View>
+      ) : (
+        <FlatList
+          data={recipes}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={2}
+          contentContainerStyle={styles.recipeList}
+          columnWrapperStyle={styles.row}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -81,6 +112,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: "#007BFF",
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   recipeList: {
     paddingTop: 10,
     paddingHorizontal: 5,
@@ -116,10 +152,12 @@ const styles = StyleSheet.create({
   },
   heartIcon: {
     position: "absolute",
-    right: 2,
-    top: 2,
+    right: 5,
+    top: 5,
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    borderRadius: 12,
+    padding: 5,
   },
-})
+});
 
-export default HomeScreen
-
+export default HomeScreen;
