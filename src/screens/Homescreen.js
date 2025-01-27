@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -7,41 +7,21 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
 } from "react-native";
-import supabase from "../data/API_Config";
 import { useNavigation } from "@react-navigation/native";
-import Ionicons from "react-native-vector-icons/Ionicons";
+import { HomeController } from "../controller/HomeController";
 
 const HomeScreen = () => {
-  const [recipes, setRecipes] = useState([]);
-  const [favorites, setFavorites] = useState({});
-  const [searchQuery, setSearchQuery] = useState("");
-
   const navigation = useNavigation();
-
-  const fetchRecipes = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("recipes")
-        .select("*")
-        .limit(16);
-      if (error) throw error;
-      setRecipes(data || []);
-    } catch (error) {
-      console.error("Fehler beim Abrufen der Rezepte:", error.message);
-    }
-  };
-
-  useEffect(() => {
-    fetchRecipes();
-  }, []);
-
-  const toggleFavorite = (id) => {
-    setFavorites((prevFavorites) => ({
-      ...prevFavorites,
-      [id]: !prevFavorites[id],
-    }));
-  };
+  const {
+    recipes,
+    favorites,
+    searchQuery,
+    isLoading,
+    setSearchQuery,
+    toggleFavorite,
+  } = HomeController();
 
   const renderItem = ({ item }) => (
     <TouchableOpacity
@@ -52,6 +32,13 @@ const HomeScreen = () => {
     >
       <Image source={{ uri: item.image }} style={styles.recipeImage} />
       <Text style={styles.recipeTitle}>{item.title}</Text>
+      {/* <TouchableOpacity
+        style={styles.heartIcon}
+        onPress={() => toggleFavorite(item.id)}
+      >
+        <Text>{favorites[item.id] ? "❤️" : "🤍"}</Text>
+      </TouchableOpacity>
+     */}
     </TouchableOpacity>
   );
 
@@ -63,21 +50,28 @@ const HomeScreen = () => {
           placeholder="Suche nach Rezepten..."
           placeholderTextColor="#999"
           value={searchQuery}
-          onChangeText={(text) => setSearchQuery(text)}
+          onChangeText={setSearchQuery}
         />
         <TouchableOpacity style={styles.searchIconContainer}>
           <Text style={styles.searchIcon}>🔍</Text>
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={recipes}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        contentContainerStyle={styles.recipeList}
-        showsVerticalScrollIndicator={false}
-      />
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007BFF" />
+        </View>
+      ) : (
+        <FlatList
+          data={recipes}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={2}
+          contentContainerStyle={styles.recipeList}
+          columnWrapperStyle={styles.row}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </View>
   );
 };
@@ -118,12 +112,23 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: "#007BFF",
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   recipeList: {
     paddingTop: 10,
+    paddingHorizontal: 5,
+  },
+  row: {
+    flex: 1,
+    justifyContent: "flex-start",
   },
   recipeCard: {
-    flex: 1,
-    margin: 5,
+    flex: 0,
+    width: "48%",
+    margin: "1%",
     backgroundColor: "#fff",
     borderRadius: 10,
     overflow: "hidden",
@@ -147,8 +152,11 @@ const styles = StyleSheet.create({
   },
   heartIcon: {
     position: "absolute",
-    right: 2,
-    top: 2,
+    right: 5,
+    top: 5,
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    borderRadius: 12,
+    padding: 5,
   },
 });
 
