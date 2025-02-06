@@ -46,7 +46,7 @@ export const HomeController = () => {
         throw error;
       }
 
-      console.log("Fetched recipes:", data);
+      //console.log("Fetched recipes:", data);
       setRecipes(data || []);
     } catch (error) {
       console.error("Fehler beim Abrufen der Rezepte:", error);
@@ -64,7 +64,7 @@ export const HomeController = () => {
         .order("name");
 
       if (error) throw error;
-      console.log("Fetched categories:", data);
+      //console.log("Fetched categories:", data);
       setCategories(data || []);
     } catch (error) {
       console.error("Fehler beim Abrufen der Kategorien:", error);

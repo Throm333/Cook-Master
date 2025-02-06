@@ -6,19 +6,35 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Dimensions,
   ActivityIndicator,
+  Dimensions,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { DetailRecipeController } from "../controller/DetailRecipeContrroller";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, FontAwesome } from "@expo/vector-icons";
 
 const Tab = createMaterialTopTabNavigator();
 const windowHeight = Dimensions.get("window").height;
 
-const IngredientsScreen = ({ ingredients }) => (
+const IngredientsScreen = ({ ingredients, servings, updateServings }) => (
   <View style={styles.tabContent}>
+    <View style={styles.servingsContainer}>
+      <TouchableOpacity
+        onPress={() => updateServings(servings - 1)}
+        style={styles.servingsButton}
+      >
+        <Text style={styles.servingsButtonText}>-</Text>
+      </TouchableOpacity>
+      <Text style={styles.servingsText}>🍲 Servings: {servings}</Text>
+      <TouchableOpacity
+        onPress={() => updateServings(servings + 1)}
+        style={styles.servingsButton}
+      >
+        <Text style={styles.servingsButtonText}>+</Text>
+      </TouchableOpacity>
+    </View>
+
     {ingredients?.length > 0 ? (
       ingredients.map((ingredient, index) => (
         <View key={index}>
@@ -45,8 +61,14 @@ const DetailRecipeScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { id } = route.params;
-  const { recipe, isFavorite, isLoading, toggleFavorite } =
-    DetailRecipeController(id);
+  const {
+    recipe,
+    isFavorite,
+    isLoading,
+    toggleFavorite,
+    servings,
+    updateServings,
+  } = DetailRecipeController(id);
 
   if (isLoading) {
     return (
@@ -98,7 +120,11 @@ const DetailRecipeScreen = () => {
           <Tab.Screen
             name="Zutaten"
             children={() => (
-              <IngredientsScreen ingredients={recipe.ingredients} />
+              <IngredientsScreen
+                ingredients={recipe.ingredients}
+                servings={servings}
+                updateServings={updateServings}
+              />
             )}
           />
           <Tab.Screen
@@ -186,6 +212,23 @@ const styles = StyleSheet.create({
   tabContent: {
     padding: 20,
   },
+  servingsContainer: {
+    backgroundColor: "#f8f8f8",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  servingsIcon: {
+    fontSize: 20,
+    marginRight: 8,
+  },
+  servingsText: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
   ingredientRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -216,6 +259,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666",
     lineHeight: 24,
+  },
+  servingsButton: {
+    backgroundColor: "tomato",
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 5,
+    marginHorizontal: 10,
+  },
+  servingsButtonText: {
+    fontSize: 30,
+    color: "white",
+  },
+  servingsText: {
+    fontSize: 20,
+    fontWeight: "bold",
   },
 });
 

@@ -1,5 +1,4 @@
 import axios from "axios";
-
 import { createClient } from "@supabase/supabase-js";
 
 /* -----------------------------Verbindung zur DB und API-------------------------------------- */
@@ -29,7 +28,6 @@ async function insertRecipes() {
     });
 
     const recipes = response.data.results;
-
     console.log(`${recipes.length} Rezepte erfolgreich abgerufen.`);
 
     /* -----------------------------Überprüfen, ob ein Rezept bereits existiert-------------------------------------- */
@@ -55,6 +53,7 @@ async function insertRecipes() {
         continue;
       }
 
+      // Hole detaillierte Rezeptinfos
       const recipeDetailsResponse = await api.get(`/${recipe.id}/information`);
       const recipeDetails = recipeDetailsResponse.data;
 
@@ -62,9 +61,9 @@ async function insertRecipes() {
 
       const ingredients = Array.isArray(recipeDetails.extendedIngredients)
         ? recipeDetails.extendedIngredients.map((ing) => ({
-          amount: `${ing.amount} ${ing.unit}`,
-          name: ing.name,
-        }))
+            amount: `${ing.amount} ${ing.unit}`,
+            name: ing.name,
+          }))
         : [];
 
       const categories = Array.isArray(recipeDetails.dishTypes)
@@ -75,9 +74,11 @@ async function insertRecipes() {
         recipeDetails.instructions ||
         (recipeDetails.analyzedInstructions?.length > 0
           ? recipeDetails.analyzedInstructions[0].steps
-            .map((step) => step.step)
-            .join(" ")
+              .map((step) => step.step)
+              .join(" ")
           : "Keine Anleitung verfügbar");
+
+      const servings = recipeDetails.servings || 1; // Falls undefined, auf 1 setzen
 
       /* --------------------------Rezepte in Datenbank Tabelle recipes speichern------------------------------------------*/
 
@@ -88,6 +89,7 @@ async function insertRecipes() {
             title: recipeDetails.title || "",
             image: recipeDetails.image || null,
             instructions: instructions,
+            servings: servings,
             created_at: new Date().toISOString(),
           },
         ])
@@ -102,8 +104,6 @@ async function insertRecipes() {
       }
 
       const recipeId = recipeData[0].id;
-
-      //console.log("Eingefügtes Rezept:", recipeData);
 
       /* -------------------------Zutaten in DB Tabelle ingredients speichern---------------------------------------------*/
 
@@ -143,7 +143,6 @@ async function insertRecipes() {
 
         let categoryId;
 
-        //Überprüfung, ob Kategorie bereits existiert, wenn nicht, wird eine neue erstellt
         if (existingCategory.length > 0) {
           categoryId = existingCategory[0].id;
         } else {
@@ -180,11 +179,11 @@ async function insertRecipes() {
         }
       }
 
-      //console.log(`Rezept "${recipeDetails.title}" erfolgreich hinzugefügt.`);
+      // console.log(`Rezept "${recipeDetails.title}" erfolgreich hinzugefügt.`);
     }
   } catch (error) {
     console.error(
-      "Fehler beim Abrufen oder Einfügen von Rezepten:",
+      " Fehler beim Abrufen oder Einfügen von Rezepten:",
       error.message
     );
   }
