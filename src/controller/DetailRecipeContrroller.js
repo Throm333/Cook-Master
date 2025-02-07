@@ -5,6 +5,22 @@ export const DetailRecipeController = (id) => {
   const [recipe, setRecipe] = useState({});
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [servings, setServings] = useState(2);
+  const extractNumber = (amount) => {
+    const match = amount?.match(/[\d.]+/);
+    return match ? parseFloat(match[0]) : null;
+  };
+
+  const formatInstructions = (instructions) => {
+    if (!instructions) return [];
+    return instructions
+      .split("\n")
+      .filter((step) => step.trim() !== "")
+      .map((step, index) => ({
+        stepNumber: `Step ${index + 1}:`,
+        text: step.trim(),
+      }));
+  };
 
   const fetchRecipeDetails = useCallback(async () => {
     setIsLoading(true);
@@ -12,17 +28,19 @@ export const DetailRecipeController = (id) => {
       const { data, error } = await supabase
         .from("recipes")
         .select(
-          `
-          *,
+          `*,
           ingredients (name, amount),
-          recipe_categories (categories (name))
-        `
+          recipe_categories (categories (name))`
         )
         .eq("id", id)
         .single();
 
       if (error) throw error;
-      setRecipe(data || {});
+
+      setRecipe({
+        ...data,
+        instructions: formatInstructions(data.instructions), // Anweisungen formatieren
+      });
 
       const { data: favoriteData } = await supabase
         .from("favorites")
@@ -64,6 +82,27 @@ export const DetailRecipeController = (id) => {
     }
   }, [id, isFavorite]);
 
+  const updateServings = (newServings) => {
+    if (newServings < 1) return;
+
+    const factor = newServings / servings;
+    const updatedIngredients = recipe.ingredients.map((ingredient) => {
+      const baseAmount = extractNumber(ingredient.amount);
+      const scaledAmount = baseAmount
+        ? (baseAmount * factor).toFixed(2)
+        : ingredient.amount;
+
+      return {
+        ...ingredient,
+        scaledAmount,
+        unit: ingredient.amount.replace(/[\d.]+/, "").trim(),
+      };
+    });
+
+    setRecipe({ ...recipe, ingredients: updatedIngredients });
+    setServings(newServings);
+  };
+
   useEffect(() => {
     fetchRecipeDetails();
   }, [fetchRecipeDetails]);
@@ -72,6 +111,8 @@ export const DetailRecipeController = (id) => {
     recipe,
     isFavorite,
     isLoading,
+    servings,
+    updateServings,
     toggleFavorite,
   };
 };
