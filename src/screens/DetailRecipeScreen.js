@@ -53,7 +53,16 @@ const IngredientsScreen = ({ ingredients, servings, updateServings }) => (
 
 const InstructionsScreen = ({ instructions }) => (
   <View style={styles.tabContent}>
-    <Text style={styles.instructionText}>{instructions}</Text>
+    {instructions?.length > 0 ? (
+      instructions.map((step, index) => (
+        <View key={index} style={styles.instructionContainer}>
+          <Text style={styles.stepNumber}>{step.stepNumber}</Text>
+          <Text style={styles.instructionText}>{step.text}</Text>
+        </View>
+      ))
+    ) : (
+      <Text style={styles.instructionText}>Keine Anleitung verfügbar</Text>
+    )}
   </View>
 );
 
@@ -274,6 +283,23 @@ const styles = StyleSheet.create({
   servingsText: {
     fontSize: 20,
     fontWeight: "bold",
+  },
+  instructionContainer: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 10,
+  },
+  stepNumber: {
+    fontWeight: "bold",
+    fontSize: 16,
+    marginRight: 8,
+    color: "#666",
+  },
+  instructionText: {
+    fontSize: 16,
+    flexShrink: 1,
+    color: "#666",
+    marginBottom: 15,
   },
 });
 

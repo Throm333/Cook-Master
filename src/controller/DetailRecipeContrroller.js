@@ -11,23 +11,36 @@ export const DetailRecipeController = (id) => {
     return match ? parseFloat(match[0]) : null;
   };
 
+  const formatInstructions = (instructions) => {
+    if (!instructions) return [];
+    return instructions
+      .split("\n")
+      .filter((step) => step.trim() !== "")
+      .map((step, index) => ({
+        stepNumber: `Step ${index + 1}:`,
+        text: step.trim(),
+      }));
+  };
+
   const fetchRecipeDetails = useCallback(async () => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
         .from("recipes")
         .select(
-          `
-          *,
+          `*,
           ingredients (name, amount),
-          recipe_categories (categories (name))
-        `
+          recipe_categories (categories (name))`
         )
         .eq("id", id)
         .single();
 
       if (error) throw error;
-      setRecipe(data || {});
+
+      setRecipe({
+        ...data,
+        instructions: formatInstructions(data.instructions), // Anweisungen formatieren
+      });
 
       const { data: favoriteData } = await supabase
         .from("favorites")
