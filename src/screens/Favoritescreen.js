@@ -6,8 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  Modal,
-  Button,
   TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,8 +14,7 @@ import supabase from "../data/API_Config";
 const Favoritescreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [favorites, setFavorites] = useState([]);
-  const [selectedRecipe, setSelectedRecipe] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [filteredFavorites, setFilteredFavorites] = useState([]);
 
   useEffect(() => {
     fetchFavorites();
@@ -57,6 +54,7 @@ const Favoritescreen = () => {
       }));
 
       setFavorites(formattedFavorites);
+      setFilteredFavorites(formattedFavorites); // initially show all favorites
     } catch (error) {
       console.error("Error fetching favorites:", error.message);
     }
@@ -64,16 +62,6 @@ const Favoritescreen = () => {
 
   const handleFavoritesChange = () => {
     fetchFavorites();
-  };
-
-  const openModal = (recipe) => {
-    setSelectedRecipe(recipe);
-    setModalVisible(true);
-  };
-
-  const closeModal = () => {
-    setModalVisible(false);
-    setSelectedRecipe(null);
   };
 
   const handleRemoveFavorite = async (id) => {
@@ -89,8 +77,13 @@ const Favoritescreen = () => {
     }
   };
 
-  const handleSearch = () => {
-    console.log("Search query:", searchQuery);
+  const handleSearch = (text) => {
+    setSearchQuery(text);
+    const lowercasedQuery = text.toLowerCase();
+    const filtered = favorites.filter((recipe) =>
+      recipe.name.toLowerCase().includes(lowercasedQuery)
+    );
+    setFilteredFavorites(filtered);
   };
 
   return (
@@ -102,59 +95,34 @@ const Favoritescreen = () => {
             placeholder="Suche nach Rezepten..."
             placeholderTextColor="#888"
             value={searchQuery}
-            onChangeText={setSearchQuery}
+            onChangeText={handleSearch} // Call handleSearch on text change
           />
-          <TouchableOpacity onPress={handleSearch}>
+          <TouchableOpacity onPress={() => handleSearch(searchQuery)}>
             <Ionicons name="search" size={24} color="#FF6347" />
           </TouchableOpacity>
         </View>
-        {favorites.map((recipe) => (
-          <TouchableOpacity
-            key={recipe.id}
-            style={styles.recipeItem}
-            onPress={() => openModal(recipe)}
-          >
-            <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
-            <Text style={styles.recipeName}>{recipe.name}</Text>
-            <TouchableOpacity onPress={() => handleRemoveFavorite(recipe.id)}>
-              <Ionicons name="heart" size={24} color="red" />
-            </TouchableOpacity>
-          </TouchableOpacity>
-        ))}
+        {filteredFavorites.length === 0 ? (
+          <Text style={styles.noResults}>Keine Rezepte gefunden</Text>
+        ) : (
+          filteredFavorites.map((recipe) => (
+            <View key={recipe.id} style={styles.recipeItem}>
+              <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
+              <Text style={styles.recipeName}>{recipe.name}</Text>
+              <TouchableOpacity onPress={() => handleRemoveFavorite(recipe.id)}>
+                <Ionicons name="heart" size={24} color="red" />
+              </TouchableOpacity>
+            </View>
+          ))
+        )}
       </ScrollView>
-
-      <Modal
-        visible={modalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={closeModal}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            {selectedRecipe && (
-              <>
-                <Image
-                  source={{ uri: selectedRecipe.image }}
-                  style={styles.modalImage}
-                />
-                <Text style={styles.modalTitle}>{selectedRecipe.name}</Text>
-                <Text style={styles.modalDescription}>Rezeptdetails</Text>
-                <Button title="Schließen" onPress={closeModal} />
-              </>
-            )}
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  // Same styles as in your code
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    //paddingTop: 50,
   },
   recipeList: {
     flex: 1,
@@ -204,6 +172,12 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: "#333",
+  },
+  noResults: {
+    fontSize: 18,
+    textAlign: "center",
+    color: "#888",
+    marginTop: 20,
   },
 });
 
