@@ -1,4 +1,4 @@
-import supabase from "../data/API_Config"; // Importieren Sie die Supabase-Client-Konfiguration
+import supabase from "../data/API_Config";
 export const addNewRecipe = async (recipe) => {
   try {
     // Rezept in der Tabelle `recipes` speichern
@@ -21,12 +21,13 @@ export const addNewRecipe = async (recipe) => {
     const recipeId = recipeData.id;
 
     for (const ingredient of recipe.ingredient) {
+      const combinedAmount = `${ingredient.amount} ${ingredient.unit}`.trim(); // Menge + Einheit kombinieren
       const { error: ingredientError } = await supabase
         .from("ingredients")
         .insert({
           recipe_id: recipeId,
           name: ingredient.name,
-          amount: ingredient.amount,
+          amount: combinedAmount,
         });
 
       if (ingredientError) throw ingredientError;
