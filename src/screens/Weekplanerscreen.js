@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { Modal, StyleSheet, TouchableOpacity, Text, View, Button, Image } from "react-native";
+import React, { useState , useEffect } from 'react';
+import { Modal, StyleSheet, TouchableOpacity, Text, View, Button, Image, ScrollView,} from "react-native";
 import { RollInRight } from 'react-native-reanimated';
 import Abend from '../../assets/images/abendsIcon.jpg';
+import { Ionicons } from "@expo/vector-icons";
+import supabase from "../data/API_Config";
 
 
 const Weekplanerscreen = () => {
@@ -12,6 +14,66 @@ const Weekplanerscreen = () => {
   <Image source={require('../../assets/images/abendsIcon.jpg')} style={{ width: 50, height: 50 }}/>
                 ];
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedTime, setSelectedTime] = useState(null);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [favorites, setFavorites] = useState([]);
+  
+
+  useEffect(() => {
+    fetchFavorites();
+
+    const realTime = supabase
+      .channel("favorites_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "favorites" },
+        handleFavoritesChange
+      )
+      .subscribe();
+
+    return () => {
+      realTime.unsubscribe();
+    };
+  }, []);
+
+  const fetchFavorites = async () => {
+    try {
+      const { data, error } = await supabase.from("favorites").select(`
+          recipe_id,
+          recipes (
+            id,
+            title,
+            image
+          )
+        `);
+
+      if (error) throw error;
+
+      const formattedFavorites = data.map((fav) => ({
+        id: fav.recipes.id,
+        name: fav.recipes.title,
+        image: fav.recipes.image,
+        isFavorite: true,
+      }));
+
+      setFavorites(formattedFavorites);
+    } catch (error) {
+      console.error("Error fetching favorites:", error.message);
+    }
+  };
+
+  const handleFavoritesChange = () => {
+    fetchFavorites();
+  };
+
+  const addRecepieToEat = (recipe) => {
+
+    setSelectedRecipe(recipe)
+    setModalVisible(false);
+  };
+
+
 
   return (
     <View style={styles.container}>
@@ -26,22 +88,45 @@ const Weekplanerscreen = () => {
           </View>
           {times.map((time, index) => (
             <View style={styles.row} key={index}>
-              {days.map((day) => (
-                <TouchableOpacity
-                  style={styles.cell}
-                  key={`${day}-${time}`}
-                  onPress={() => setModalVisible(true)}
-                >
-                  <Text>{time}</Text>
-                </TouchableOpacity>
-              ))}
+              {days.map((day) => {
+                
+
+
+                return (
+                  <TouchableOpacity
+                    style={styles.cell}
+                    key={`${day}-${time}`}
+                    onPress={() => {
+                      setSelectedDay(day);
+                      setSelectedTime(index);
+                      setModalVisible(true);
+                    }}
+                  >
+                    {selectedRecipe ? (
+                      <Image
+
+                        source={{ uri: selectedRecipe.image }}
+                        style={{ width: 50, height: 50 }}
+                      />
+                    ) : (
+                      <Text>{time}</Text>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           ))}
         </View>
       </View>
 
       <View style={styles.bottomContainer}>
-        <Text style={styles.bottomText}>Zutatenliste.</Text>
+        <Text style={styles.bottomText}>Zutatenliste</Text>
+
+        {selectedRecipe && ( // Nur anzeigen, wenn ein Rezept ausgewählt wurde
+        <Text style={styles.selectedRecipeText}>
+        Ausgewähltes Rezept: {selectedRecipe.name}
+        </Text>
+        )}                 
 
       </View>
       <View style={styles.container}>
@@ -61,7 +146,22 @@ const Weekplanerscreen = () => {
           <View style={styles.modalContent}>
 
             <Text style={styles.modalText}>Favorites</Text>
+            {/* Favotirten inerhalb des Modals */}
             
+                  <ScrollView style={styles.recipeList}>
+                    {favorites.map((recipe) => (
+                      <TouchableOpacity
+                        key={recipe.id}
+                        style={styles.recipeItem}
+                        onPress={() => addRecepieToEat(recipe)}
+                      >
+                        <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
+                        <Text style={styles.recipeName}>{recipe.name}</Text>
+
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                
             <View style={styles.modalExit}>
 
               <Button title="X" onPress={() => setModalVisible(false)} />
@@ -149,6 +249,36 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 5,
     right: 10,
+  },
+  recipeList: {
+    paddingHorizontal: 2,
+    width: '100%',
+    marginTop: 10,
+  },
+  recipeItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 15,
+    backgroundColor: "#f8f8f8",
+    borderRadius: 10,
+    padding: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  recipeImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 10,
+  },
+  recipeName: {
+    marginLeft: 10,
+    marginRight: 40,
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#333",
   },
 });
 
