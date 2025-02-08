@@ -8,9 +8,9 @@ import { addNewRecipe } from "../controller/AddRecipeController";
 const AddRecipesScreen = () => {
   const [title, setTitle] = useState("");
   const [image, setImage] = useState(null); // Speichert den URI des ausgewählten Bildes
-  const [portions, setPortions] = useState(2); // Startwert für die Portionenanzahl ist 2
-  const [ingredientInput, setIngredientInput] = useState({quantity: "", unit: "ml", name: "",}); // Eingabefeld für Zutaten
-  const [ingredients, setIngredients] = useState([]); // Liste der eingegebenen Zutaten
+  const [servings, setServings] = useState(2); // Startwert für die Portionenanzahl ist 2
+  const [ingredientInput, setIngredientInput] = useState({amount: "", unit: "ml", name: "",}); // Eingabefeld für Zutaten
+  const [ingredient, setIngredients] = useState([]); // Liste der eingegebenen Zutaten
   const [showUnits, setShowUnits] = useState(false); // Alle möglichen Mengeneinheiten werden angezeit
   const [instructionInput, setInstructionInput] = useState("");
   const [instruction, setInstruction] = useState([]);
@@ -32,14 +32,14 @@ const AddRecipesScreen = () => {
   };
   // Funktion um Zutaten hinzuzufügen
   const addIngredient = () => { 
-    if (ingredientInput.quantity.trim() && ingredientInput.name.trim()) {  // Entfernt Leerzeichen am Anfang und Ende "   Apfel   " -> "Apfel", leere Eingaben (nur Leerzeichen) werden nicht angenommen
-      setIngredients([...ingredients, ingredientInput]); 
-      setIngredientInput({ quantity: "", unit: "ml", name: "" }); // Leert das Eingabefeld, nachdem die Zutat hinzugefügt wurde
+    if (ingredientInput.amount.trim() && ingredientInput.name.trim()) {  // Entfernt Leerzeichen am Anfang und Ende "   Apfel   " -> "Apfel", leere Eingaben (nur Leerzeichen) werden nicht angenommen
+      setIngredients([...ingredient, ingredientInput]); 
+      setIngredientInput({ amount: "", unit: "ml", name: "" }); // Leert das Eingabefeld, nachdem die Zutat hinzugefügt wurde
     }
   };
   // Funktion um Zutaten zu entfernen
   const removeIngredient = (index) => {
-    setIngredients(ingredients.filter((_,i) => i !== index)); 
+    setIngredients(ingredient.filter((_,i) => i !== index)); 
   };
   // Funktion um Zubereitungsschritte hinzuzufügen
   const addStep = () => {
@@ -68,16 +68,17 @@ const AddRecipesScreen = () => {
     {label: "tsp", value: "tsp"},
   ];
   const handleSaveRecipe = async () => {
-    if (!title.trim() || ingredients.length === 0 || instruction.length === 0) {
+    if (!title.trim() || ingredient.length === 0 || instruction.length === 0) {
       alert("You haven't finished your recipe yet :(");
       return;
     }
     const recipe = {
       title,
       image,
-      portions,
-      ingredients,
+      servings,
+      ingredient,
       instruction,
+      categories: [""],
     };
     console.log(recipe);
     const savedRecipe = await addNewRecipe(recipe);
@@ -122,17 +123,17 @@ const AddRecipesScreen = () => {
       <View style={styles.box}>   
         <Text style={styles.portionLabel}>Portions:</Text>
         <View style={styles.portionControls}>
-          <Button title="-" onPress={() => setPortions(portions > 1 ? portions - 1 : 1)} color="#FF6347"/>
+          <Button title="-" onPress={() => setServings(servings > 1 ? servings - 1 : 1)} color="#FF6347"/>
           <TextInput
             style={styles.portionsInput}
-            value={String(portions)}
+            value={String(servings)}
             keyboardType="numeric"  // Man kann nur Zahlen eintragen
             onChangeText={(value) => {
               const numericValue = Number(value);
-              setPortions(numericValue > 0 ? numericValue : ""); // Setze nur positive Werte, sonst leeres Feld
+              setServings(numericValue > 0 ? numericValue : ""); // Setze nur positive Werte, sonst leeres Feld
             }}
           />
-          <Button title="+" onPress={() => setPortions(portions + 1)} color="#FF6347"/>
+          <Button title="+" onPress={() => setServings(servings + 1)} color="#FF6347"/>
         </View>
       </View>
       <Text style={styles.title}>Ingredients</Text>
@@ -141,11 +142,11 @@ const AddRecipesScreen = () => {
           style={[styles.ingredientText, { width: 40 }]}
           placeholder="Qty"
           placeholderTextColor="#888"
-          value={ingredientInput.quantity}
+          value={ingredientInput.amount}
           keyboardType="numeric"
           onChangeText={(value) => {
             const numericValue = value.replace(/[^0-9]/g, '').slice(0, 3);  // Maximale Menge ist 999
-            setIngredientInput({ ...ingredientInput, quantity: numericValue});
+            setIngredientInput({ ...ingredientInput, amount: numericValue});
           }}
         />
         <View style={styles.separator} /> 
@@ -197,10 +198,10 @@ const AddRecipesScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {ingredients.map((ingredient, index) => (               
+      {ingredient.map((ingredient, index) => (               
         <View key={index} style={styles.ingredientContainer}>   
           <Text style={styles.boxText}>
-          {ingredient.quantity} {ingredient.unit} {ingredient.name}
+          {ingredient.amount} {ingredient.unit} {ingredient.name}
           </Text>
           <TouchableOpacity style={styles.removeButton} onPress={() => removeIngredient(index)}>
             <Text style={styles.removeButtonText}>-</Text>
