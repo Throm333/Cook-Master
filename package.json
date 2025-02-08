@@ -9,11 +9,8 @@
     "web": "expo start --web"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@babel/traverse": "^7.26.7",
-=======
     "@expo/metro-runtime": "~4.0.0",
->>>>>>> tyler
     "@react-navigation/bottom-tabs": "^7.0.11",
     "@react-navigation/material-top-tabs": "^7.1.0",
     "@react-navigation/native": "^7.0.6",
@@ -31,13 +28,9 @@
     "react-native-image-picker": "^7.2.3",
     "react-native-reanimated": "^3.16.3",
     "react-native-safe-area-context": "^4.14.0",
-<<<<<<< HEAD
-    "react-native-vector-icons": "^10.2.0"
-=======
     "react-native-screens": "^4.3.0",
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.13"
->>>>>>> tyler
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
