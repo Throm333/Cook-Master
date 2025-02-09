@@ -16,7 +16,7 @@ export const FavoriteController = () => {
     fetchFavorites();
     fetchUserRecipes();
 
-    const realTime = supabase
+    const realTimeFavorites = supabase
       .channel("favorites_changes")
       .on(
         "postgres_changes",
@@ -25,8 +25,18 @@ export const FavoriteController = () => {
       )
       .subscribe();
 
+    const realTimeUserRecipes = supabase
+      .channel("user_recipes_changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "user_recipes" },
+        handleUserRecipesChange
+      )
+      .subscribe();
+
     return () => {
-      realTime.unsubscribe();
+      realTimeFavorites.unsubscribe();
+      realTimeUserRecipes.unsubscribe();
     };
   }, []);
 
@@ -80,6 +90,10 @@ export const FavoriteController = () => {
 
   const handleFavoritesChange = () => {
     fetchFavorites();
+  };
+
+  const handleUserRecipesChange = () => {
+    fetchUserRecipes();
   };
 
   const handleRemoveFavorite = async (id) => {
