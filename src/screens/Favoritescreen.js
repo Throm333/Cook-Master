@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+"use client";
 import {
   StyleSheet,
   Text,
@@ -9,112 +9,123 @@ import {
   TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import supabase from "../data/API_Config";
+import { FavoriteController } from "../controller/FavoriteController";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+
+const Tab = createMaterialTopTabNavigator();
+
+const RecipeList = ({
+  recipes,
+  onRemoveFavorite,
+  onNavigateToDetail,
+  showFavoriteButton,
+}) => (
+  <ScrollView>
+    {recipes.length === 0 ? (
+      <Text style={styles.noResults}>Keine Rezepte gefunden</Text>
+    ) : (
+      recipes.map((recipe) => (
+        <TouchableOpacity
+          key={recipe.id}
+          style={styles.recipeItem}
+          onPress={() => onNavigateToDetail(recipe.id)}
+        >
+          <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
+          <Text style={styles.recipeName}>{recipe.name}</Text>
+          {showFavoriteButton && (
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                onRemoveFavorite(recipe.id);
+              }}
+            >
+              <Ionicons name="heart" size={24} color="red" />
+            </TouchableOpacity>
+          )}
+        </TouchableOpacity>
+      ))
+    )}
+  </ScrollView>
+);
+
+const FavoriteRecipesScreen = ({
+  favorites,
+  onRemoveFavorite,
+  onNavigateToDetail,
+}) => (
+  <View style={styles.tabContent}>
+    <RecipeList
+      recipes={favorites}
+      onRemoveFavorite={onRemoveFavorite}
+      onNavigateToDetail={onNavigateToDetail}
+      showFavoriteButton={true}
+    />
+  </View>
+);
+
+const UserRecipesScreen = ({ userRecipes, onNavigateToDetail }) => (
+  <View style={styles.tabContent}>
+    <RecipeList
+      recipes={userRecipes}
+      onNavigateToDetail={onNavigateToDetail}
+      showFavoriteButton={false}
+    />
+  </View>
+);
 
 const Favoritescreen = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [favorites, setFavorites] = useState([]);
-  const [filteredFavorites, setFilteredFavorites] = useState([]);
-
-  useEffect(() => {
-    fetchFavorites();
-
-    const realTime = supabase
-      .channel("favorites_changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "favorites" },
-        handleFavoritesChange
-      )
-      .subscribe();
-
-    return () => {
-      realTime.unsubscribe();
-    };
-  }, []);
-
-  const fetchFavorites = async () => {
-    try {
-      const { data, error } = await supabase.from("favorites").select(`
-          recipe_id,
-          recipes (
-            id,
-            title,
-            image
-          )
-        `);
-
-      if (error) throw error;
-
-      const formattedFavorites = data.map((fav) => ({
-        id: fav.recipes.id,
-        name: fav.recipes.title,
-        image: fav.recipes.image,
-        isFavorite: true,
-      }));
-
-      setFavorites(formattedFavorites);
-      setFilteredFavorites(formattedFavorites); // initially show all favorites
-    } catch (error) {
-      console.error("Error fetching favorites:", error.message);
-    }
-  };
-
-  const handleFavoritesChange = () => {
-    fetchFavorites();
-  };
-
-  const handleRemoveFavorite = async (id) => {
-    try {
-      const { error } = await supabase
-        .from("favorites")
-        .delete()
-        .eq("recipe_id", id);
-
-      if (error) throw error;
-    } catch (error) {
-      console.error("Error removing favorite:", error.message);
-    }
-  };
-
-  const handleSearch = (text) => {
-    setSearchQuery(text);
-    const lowercasedQuery = text.toLowerCase();
-    const filtered = favorites.filter((recipe) =>
-      recipe.name.toLowerCase().includes(lowercasedQuery)
-    );
-    setFilteredFavorites(filtered);
-  };
+  const {
+    searchQuery,
+    filteredFavorites,
+    filteredUserRecipes,
+    handleSearch,
+    handleRemoveFavorite,
+    navigateToRecipeDetail,
+  } = FavoriteController();
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.recipeList}>
-        <View style={styles.searchBar}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Suche nach Rezepten..."
-            placeholderTextColor="#888"
-            value={searchQuery}
-            onChangeText={handleSearch} // Call handleSearch on text change
-          />
-          <TouchableOpacity onPress={() => handleSearch(searchQuery)}>
-            <Ionicons name="search" size={24} color="#FF6347" />
-          </TouchableOpacity>
-        </View>
-        {filteredFavorites.length === 0 ? (
-          <Text style={styles.noResults}>Keine Rezepte gefunden</Text>
-        ) : (
-          filteredFavorites.map((recipe) => (
-            <View key={recipe.id} style={styles.recipeItem}>
-              <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
-              <Text style={styles.recipeName}>{recipe.name}</Text>
-              <TouchableOpacity onPress={() => handleRemoveFavorite(recipe.id)}>
-                <Ionicons name="heart" size={24} color="red" />
-              </TouchableOpacity>
-            </View>
-          ))
-        )}
-      </ScrollView>
+      <View style={styles.searchBar}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Suche nach Rezepten..."
+          placeholderTextColor="#888"
+          value={searchQuery}
+          onChangeText={handleSearch}
+        />
+        <TouchableOpacity onPress={() => handleSearch(searchQuery)}>
+          <Ionicons name="search" size={24} color="#FF6347" />
+        </TouchableOpacity>
+      </View>
+      <Tab.Navigator
+        screenOptions={{
+          tabBarStyle: {
+            elevation: 0,
+            shadowOpacity: 0,
+            borderBottomWidth: 1,
+            borderBottomColor: "#f0f0f0",
+          },
+          tabBarIndicatorStyle: { backgroundColor: "#FF6347" },
+        }}
+      >
+        <Tab.Screen name="Favoriten">
+          {() => (
+            <FavoriteRecipesScreen
+              favorites={filteredFavorites}
+              onRemoveFavorite={handleRemoveFavorite}
+              onNavigateToDetail={navigateToRecipeDetail}
+            />
+          )}
+        </Tab.Screen>
+        <Tab.Screen name="Meine Rezepte">
+          {() => (
+            <UserRecipesScreen
+              userRecipes={filteredUserRecipes}
+              onNavigateToDetail={navigateToRecipeDetail}
+            />
+          )}
+        </Tab.Screen>
+      </Tab.Navigator>
     </View>
   );
 };
@@ -124,10 +135,24 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
-  recipeList: {
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f0f0f0",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    margin: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  searchInput: {
     flex: 1,
-    paddingHorizontal: 20,
-    marginTop: 30,
+    fontSize: 16,
+    color: "#333",
   },
   recipeItem: {
     flexDirection: "row",
@@ -136,6 +161,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f8f8",
     borderRadius: 10,
     padding: 10,
+    marginHorizontal: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -154,30 +180,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#333",
   },
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f0f0f0",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: "#333",
-  },
   noResults: {
     fontSize: 18,
     textAlign: "center",
     color: "#888",
     marginTop: 20,
+  },
+  tabContent: {
+    paddingTop: 16,
   },
 });
 
