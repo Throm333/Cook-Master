@@ -18,7 +18,9 @@ const Weekplanerscreen = () => {
   const [selectedTime, setSelectedTime] = useState(null);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [favorites, setFavorites] = useState([]);
-  
+  const [recipesArray, setRecipesArray] = useState(Array(21).fill(null));
+  const [selectedCellId, setSelectedCellId] = useState(null);
+  const [cellData, setCellData] = useState(Array(21).fill(null)); // Array mit 21 Plätzen
 
   useEffect(() => {
     fetchFavorites();
@@ -67,9 +69,12 @@ const Weekplanerscreen = () => {
     fetchFavorites();
   };
 
-  const addRecepieToEat = (recipe) => {
-
-    setSelectedRecipe(recipe)
+  const addRecipeToCell = (recipe) => {
+    if (selectedCellId !== null) {
+      const newCellData = [...cellData];
+      newCellData[selectedCellId] = recipe; // Speichere das Rezept an der ID-Position
+      setCellData(newCellData);
+    }
     setModalVisible(false);
   };
 
@@ -86,26 +91,26 @@ const Weekplanerscreen = () => {
               </Text>
             ))}
           </View>
-          {times.map((time, index) => (
-            <View style={styles.row} key={index}>
-              {days.map((day) => {
-                
+          {times.map((time, timeIndex) => (
+            <View style={styles.row} key={timeIndex}>
+              {days.map((day, dayIndex) => {
+              const id = dayIndex * 3 + timeIndex; // Berechne die ID
+              const recipe = cellData[id]; // Hole das Rezept für diese Zelle
+            
 
 
                 return (
                   <TouchableOpacity
                     style={styles.cell}
-                    key={`${day}-${time}`}
+                    key={id}
                     onPress={() => {
-                      setSelectedDay(day);
-                      setSelectedTime(index);
-                      setModalVisible(true);
+                      setSelectedCellId(id); // Speichere die ID der ausgewählten Zelle
+                      setModalVisible(true); // Öffne das Modal
                     }}
                   >
-                    {selectedRecipe ? (
+                    {recipe ? (
                       <Image
-
-                        source={{ uri: selectedRecipe.image }}
+                        source={{ uri: recipe.image }}
                         style={{ width: 50, height: 50 }}
                       />
                     ) : (
@@ -153,7 +158,7 @@ const Weekplanerscreen = () => {
                       <TouchableOpacity
                         key={recipe.id}
                         style={styles.recipeItem}
-                        onPress={() => addRecepieToEat(recipe)}
+                        onPress={() => addRecipeToCell(recipe)}
                       >
                         <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
                         <Text style={styles.recipeName}>{recipe.name}</Text>
