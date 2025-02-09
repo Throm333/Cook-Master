@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -6,19 +6,35 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
   Dimensions,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import Ionicons from "react-native-vector-icons/Ionicons";
-import supabase from "../data/API_Config";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
-
+import { DetailRecipeController } from "../controller/DetailRecipeContrroller";
+import { Ionicons, FontAwesome } from "@expo/vector-icons";
 
 const Tab = createMaterialTopTabNavigator();
 const windowHeight = Dimensions.get("window").height;
 
-const IngredientsScreen = ({ ingredients }) => (
+const IngredientsScreen = ({ ingredients, servings, updateServings }) => (
   <View style={styles.tabContent}>
+    <View style={styles.servingsContainer}>
+      <TouchableOpacity
+        onPress={() => updateServings(servings - 1)}
+        style={styles.servingsButton}
+      >
+        <Text style={styles.servingsButtonText}>-</Text>
+      </TouchableOpacity>
+      <Text style={styles.servingsText}>🍲 Servings: {servings}</Text>
+      <TouchableOpacity
+        onPress={() => updateServings(servings + 1)}
+        style={styles.servingsButton}
+      >
+        <Text style={styles.servingsButtonText}>+</Text>
+      </TouchableOpacity>
+    </View>
+
     {ingredients?.length > 0 ? (
       ingredients.map((ingredient, index) => (
         <View key={index}>
@@ -37,76 +53,39 @@ const IngredientsScreen = ({ ingredients }) => (
 
 const InstructionsScreen = ({ instructions }) => (
   <View style={styles.tabContent}>
-    <Text style={styles.instructionText}>{instructions}</Text>
+    {instructions?.length > 0 ? (
+      instructions.map((step, index) => (
+        <View key={index} style={styles.instructionContainer}>
+          <Text style={styles.stepNumber}>{step.stepNumber}</Text>
+          <Text style={styles.instructionText}>{step.text}</Text>
+        </View>
+      ))
+    ) : (
+      <Text style={styles.instructionText}>Keine Anleitung verfügbar</Text>
+    )}
   </View>
 );
 
 const DetailRecipeScreen = () => {
-  const [recipe, setRecipe] = useState({});
-  const [isFavorite, setIsFavorite] = useState(false);
   const route = useRoute();
   const navigation = useNavigation();
   const { id } = route.params;
+  const {
+    recipe,
+    isFavorite,
+    isLoading,
+    toggleFavorite,
+    servings,
+    updateServings,
+  } = DetailRecipeController(id);
 
-  useEffect(() => {
-    fetchRecipeDetails();
-  }, []);
-
-  const fetchRecipeDetails = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("recipes")
-        .select(
-          `
-          *,
-          ingredients (name, amount),
-          recipe_categories (categories (name))
-        `
-        )
-        .eq("id", id)
-        .single();
-
-      if (error) throw error;
-      // console.log("Fetched recipe data:", data);
-      setRecipe(data || {});
-
-      const { data: favoriteData } = await supabase
-        .from("favorites")
-        .select("*")
-        .eq("recipe_id", id)
-        .single();
-
-      setIsFavorite(!!favoriteData);
-    } catch (error) {
-      console.error("Fehler beim Abrufen der Rezeptdetails:", error.message);
-    }
-  };
-
-  const toggleFavorite = async () => {
-    try {
-      if (isFavorite) {
-        const { error } = await supabase
-          .from("favorites")
-          .delete()
-          .eq("recipe_id", id);
-
-        if (error) throw error;
-        setIsFavorite(false);
-      } else {
-        const { error } = await supabase
-          .from("favorites")
-          .insert({ recipe_id: id });
-
-        if (error) throw error;
-        setIsFavorite(true);
-      }
-    } catch (error) {
-      console.error(
-        "Fehler beim Umschalten des Favoritenstatus:",
-        error.message
-      );
-    }
-  };
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="tomato" />
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -125,12 +104,8 @@ const DetailRecipeScreen = () => {
       <View style={styles.contentContainer}>
         <View style={styles.titleContainer}>
           <Text style={styles.title}>{recipe.title}</Text>
-          <TouchableOpacity onPress={toggleFavorite} style={styles.heartIcon}>
-            <Ionicons
-              name={isFavorite ? "heart" : "heart-outline"}
-              size={32}
-              color={isFavorite ? "tomato" : "#666"}
-            />
+          <TouchableOpacity style={styles.heartIcon} onPress={toggleFavorite}>
+            <Text style={{ fontSize: 25 }}>{isFavorite ? "❤️" : "🤍"}</Text>
           </TouchableOpacity>
         </View>
 
@@ -154,7 +129,11 @@ const DetailRecipeScreen = () => {
           <Tab.Screen
             name="Zutaten"
             children={() => (
-              <IngredientsScreen ingredients={recipe.ingredients} />
+              <IngredientsScreen
+                ingredients={recipe.ingredients}
+                servings={servings}
+                updateServings={updateServings}
+              />
             )}
           />
           <Tab.Screen
@@ -173,6 +152,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   headerContainer: {
     position: "relative",
@@ -224,8 +208,11 @@ const styles = StyleSheet.create({
   },
   heartIcon: {
     position: "absolute",
-    right: 2,
-    top: 2,
+    right: 10,
+    top: 10,
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    borderRadius: 20,
+    padding: 10,
   },
   tabContainer: {
     flex: 1,
@@ -233,6 +220,23 @@ const styles = StyleSheet.create({
   },
   tabContent: {
     padding: 20,
+  },
+  servingsContainer: {
+    backgroundColor: "#f8f8f8",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  servingsIcon: {
+    fontSize: 20,
+    marginRight: 8,
+  },
+  servingsText: {
+    fontSize: 16,
+    fontWeight: "bold",
   },
   ingredientRow: {
     flexDirection: "row",
@@ -264,6 +268,38 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#666",
     lineHeight: 24,
+  },
+  servingsButton: {
+    backgroundColor: "tomato",
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 5,
+    marginHorizontal: 10,
+  },
+  servingsButtonText: {
+    fontSize: 30,
+    color: "white",
+  },
+  servingsText: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  instructionContainer: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 10,
+  },
+  stepNumber: {
+    fontWeight: "bold",
+    fontSize: 16,
+    marginRight: 8,
+    color: "#666",
+  },
+  instructionText: {
+    fontSize: 16,
+    flexShrink: 1,
+    color: "#666",
+    marginBottom: 15,
   },
 });
 

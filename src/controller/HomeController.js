@@ -1,54 +1,110 @@
-import { useState, useEffect, useCallback } from "react"
-import { debounce } from "lodash"
-import supabase from "../data/API_Config"
+import { useState, useEffect, useCallback } from "react";
+import { debounce } from "lodash";
+import supabase from "../data/API_Config";
 
 export const HomeController = () => {
-  const [recipes, setRecipes] = useState([])
-  const [favorites, setFavorites] = useState({})
-  const [searchQuery, setSearchQuery] = useState("")
+  const [recipes, setRecipes] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const fetchRecipes = async (query = "") => {
+  const fetchRecipes = useCallback(async (query = "", category = null) => {
+    setIsLoading(true);
+    console.log(
+      "Fetching recipes with query:",
+      query,
+      "and category:",
+      category
+    );
     try {
-      let supabaseQuery = supabase.from("recipes").select("*").limit(16)
+      let supabaseQuery = supabase.from("recipes").select(`
+          *,
+          recipe_categories!inner (
+            categories!inner (
+              id,
+              name
+            )
+          )
+        `);
 
-      if (query) {
-        supabaseQuery = supabaseQuery.ilike("title", `%${query}%`)
+      if (query.trim()) {
+        supabaseQuery = supabaseQuery.ilike("title", `%${query}%`);
       }
 
-      const { data, error } = await supabaseQuery
-      if (error) throw error
-      setRecipes(data || [])
+      if (category) {
+        supabaseQuery = supabaseQuery.eq(
+          "recipe_categories.categories.name",
+          category
+        );
+      }
+
+      const { data, error } = await supabaseQuery;
+
+      if (error) {
+        console.error("Supabase query error:", error);
+        throw error;
+      }
+
+      //console.log("Fetched recipes:", data);
+      setRecipes(data || []);
     } catch (error) {
-      console.error("Fehler beim Abrufen der Rezepte:", error.message)
+      console.error("Fehler beim Abrufen der Rezepte:", error);
+      setRecipes([]);
+    } finally {
+      setIsLoading(false);
     }
-  }
+  }, []);
 
-  const debouncedFetchRecipes = useCallback(
-    debounce((query) => fetchRecipes(query), 300),
-    [],
-  )
+  const fetchCategories = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from("categories")
+        .select("id, name")
+        .order("name");
+
+      if (error) throw error;
+      //console.log("Fetched categories:", data);
+      setCategories(data || []);
+    } catch (error) {
+      console.error("Fehler beim Abrufen der Kategorien:", error);
+      setCategories([]);
+    }
+  }, []);
 
   useEffect(() => {
-    fetchRecipes()
-  }, [fetchRecipes]) 
+    fetchCategories();
+    fetchRecipes();
+  }, [fetchCategories, fetchRecipes]);
 
   useEffect(() => {
-    debouncedFetchRecipes(searchQuery)
-  }, [searchQuery, debouncedFetchRecipes])
+    const debouncedFetch = debounce(() => {
+      fetchRecipes(searchQuery, selectedCategory);
+    }, 300);
 
-  const toggleFavorite = (id) => {
-    setFavorites((prevFavorites) => ({
-      ...prevFavorites,
-      [id]: !prevFavorites[id],
-    }))
-  }
+    debouncedFetch();
+
+    return () => {
+      debouncedFetch.cancel();
+    };
+  }, [searchQuery, selectedCategory, fetchRecipes]);
+
+  const handleCategorySelect = useCallback((categoryName) => {
+    console.log("Category selected:", categoryName);
+    setSelectedCategory((prev) => {
+      const newCategory = prev === categoryName ? null : categoryName;
+      console.log("New selected category:", newCategory);
+      return newCategory;
+    });
+  }, []);
 
   return {
     recipes,
-    favorites,
+    categories,
+    selectedCategory,
     searchQuery,
+    isLoading,
     setSearchQuery,
-    toggleFavorite,
-  }
-}
-
+    handleCategorySelect,
+  };
+};
