@@ -42,44 +42,65 @@ export const handleFavoritesChange = (callback) => {
 };
 
 export const useWeekplannerController = () => {
-    const [modalVisible, setModalVisible] = useState(false);
-    const [selectedCellId, setSelectedCellId] = useState(null);
-    const [cellData, setCellData] = useState(Array(21).fill(null));
-    const [favorites, setFavorites] = useState([]);
-  
-    useEffect(() => {
-      const loadFavorites = async () => {
-        const data = await fetchFavorites();
-        setFavorites(data);
-      };
-  
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedCellId, setSelectedCellId] = useState(null);
+  const [cellData, setCellData] = useState(Array(21).fill(null));
+  const [favorites, setFavorites] = useState([]);
+
+  useEffect(() => {
+    const loadFavorites = async () => {
+      const data = await fetchFavorites();
+      setFavorites(data);
+    };
+
+    loadFavorites();
+
+    const unsubscribe = handleFavoritesChange(() => {
       loadFavorites();
-  
-      const unsubscribe = handleFavoritesChange(() => {
-        loadFavorites();
-      });
-  
-      return () => {
-        unsubscribe();
-      };
-    }, []);
-  
-    const addRecipeToCell = (recipe) => {
-      if (selectedCellId !== null) {
-        const newCellData = [...cellData];
-        newCellData[selectedCellId] = recipe;
-        setCellData(newCellData);
-      }
-      setModalVisible(false);
+    });
+
+    return () => {
+      unsubscribe();
     };
-  
-    return {
-      modalVisible,
-      setModalVisible,
-      selectedCellId,
-      setSelectedCellId,
-      cellData,
-      favorites,
-      addRecipeToCell,
-    };
+  }, []);
+
+  const fetchRecipeIngredients = async (recipeId) => {
+    try {
+      const { data, error } = await supabase
+        .from("ingredients")
+        .select("amount, name")
+        .eq("recipe_id", recipeId);
+
+      if (error) throw error;
+      return data || [];
+    } catch (error) {
+      console.error("Fehler beim Abrufen der Zutaten:", error.message);
+      return [];
+    }
   };
+
+  const addRecipeToCell = async (recipe) => {
+    if (selectedCellId !== null) {
+      const ingredients = await fetchRecipeIngredients(recipe.id);
+
+      const newCellData = [...cellData];
+      newCellData[selectedCellId] = {
+        ...recipe,
+        ingredients, // Speichert die Zutaten mit ab
+      };
+
+      setCellData(newCellData);
+    }
+    setModalVisible(false);
+  };
+
+  return {
+    modalVisible,
+    setModalVisible,
+    selectedCellId,
+    setSelectedCellId,
+    cellData,
+    favorites,
+    addRecipeToCell,
+  };
+};

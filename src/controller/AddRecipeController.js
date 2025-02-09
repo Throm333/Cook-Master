@@ -98,11 +98,11 @@ export const useAddRecipeController = (navigation) => {
 
       await Promise.all(ingredientPromises);
 
-      alert("Rezept erfolgreich gespeichert!");
+      alert("Recipe successfully saved!");
       navigation.goBack();
     } catch (error) {
-      console.error("Fehler beim Speichern des Rezepts:", error);
-      alert("Fehler beim Speichern des Rezepts");
+      console.error("Error save recipe:", error);
+      alert("Failed to save recipe");
     }
   };
 

@@ -1,18 +1,31 @@
-import React, { useState , useEffect } from 'react';
-import { Modal, StyleSheet, TouchableOpacity, Text, View, Button, Image, ScrollView,} from "react-native";
-import { RollInRight } from 'react-native-reanimated';
-import Abend from '../../assets/images/abendsIcon.jpg';
-import { Ionicons } from "@expo/vector-icons";
-import supabase from "../data/API_Config";
+import React, { useState, useEffect } from "react";
+import {
+  Modal,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  View,
+  Button,
+  Image,
+  ScrollView,
+} from "react-native";
 import { useWeekplannerController } from "../controller/WeekplannerController";
-import { DetailRecipeController } from "../controller/DetailRecipeContrroller";
 
 const Weekplanerscreen = () => {
   const days = ["MO", "DI", "MI", "DO", "FR", "SA", "SO"];
   const times = [
-    <Image source={require('../../assets/images/morgensIcon.jpg')} style={{ width: 50, height: 50 }} />,
-    <Image source={require('../../assets/images/mittagsIcon.jpg')} style={{ width: 50, height: 50 }} />,
-    <Image source={require('../../assets/images/abendsIcon.jpg')} style={{ width: 50, height: 50 }} />,
+    <Image
+      source={require("../../assets/images/morgensIcon.jpg")}
+      style={{ width: 50, height: 50 }}
+    />,
+    <Image
+      source={require("../../assets/images/mittagsIcon.jpg")}
+      style={{ width: 50, height: 50 }}
+    />,
+    <Image
+      source={require("../../assets/images/abendsIcon.jpg")}
+      style={{ width: 50, height: 50 }}
+    />,
   ];
 
   const {
@@ -60,9 +73,7 @@ const Weekplanerscreen = () => {
                       <Text>{time}</Text>
                     )}
                   </TouchableOpacity>
-                  
                 );
-                
               })}
             </View>
           ))}
@@ -70,16 +81,20 @@ const Weekplanerscreen = () => {
       </View>
 
       <View style={styles.bottomContainer}>
-  <Text style={styles.bottomText}>Zutatenliste</Text>
-  
-  {cellData
-    .filter((recipe) => recipe !== null) // Filtere alle Rezepte, die nicht null sind
-    .map((recipe, index) => (
-      <Text key={index} style={styles.recipeNameText}>
-        {recipe.name}
-      </Text>
-    ))}
-</View>
+        <ScrollView>
+          <Text style={styles.bottomText}>IngredientList</Text>
+
+          {cellData
+            .filter((recipe) => recipe && recipe.ingredients?.length > 0)
+            .flatMap((recipe) => recipe.ingredients)
+            .map((ingredient, index) => (
+              <Text key={index} style={styles.recipeNameText}>
+                • {ingredient.amount || "-"}{" "}
+                {ingredient.name || "Unbekannte Zutat"}
+              </Text>
+            ))}
+        </ScrollView>
+      </View>
 
       <Modal
         animationType="slide"
@@ -97,7 +112,10 @@ const Weekplanerscreen = () => {
                   style={styles.recipeItem}
                   onPress={() => addRecipeToCell(recipe)}
                 >
-                  <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
+                  <Image
+                    source={{ uri: recipe.image }}
+                    style={styles.recipeImage}
+                  />
                   <Text style={styles.recipeName}>{recipe.name}</Text>
                 </TouchableOpacity>
               ))}
@@ -162,30 +180,30 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContent: {
-    width: '90%',
-    height: '90%',
-    backgroundColor: '#fff',
+    width: "90%",
+    height: "90%",
+    backgroundColor: "#fff",
     padding: 20,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
   modalText: {
     marginBottom: 20,
     fontSize: 25,
   },
   modalExit: {
-    position: 'absolute',
+    position: "absolute",
     top: 5,
     right: 10,
   },
   recipeList: {
     paddingHorizontal: 2,
-    width: '100%',
+    width: "100%",
     marginTop: 10,
   },
   recipeItem: {
