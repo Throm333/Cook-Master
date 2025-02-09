@@ -5,6 +5,7 @@ import Abend from '../../assets/images/abendsIcon.jpg';
 import { Ionicons } from "@expo/vector-icons";
 import supabase from "../data/API_Config";
 import { useWeekplannerController } from "../controller/WeekplannerController";
+import { DetailRecipeController } from "../controller/DetailRecipeContrroller";
 
 const Weekplanerscreen = () => {
   const days = ["MO", "DI", "MI", "DO", "FR", "SA", "SO"];
@@ -69,9 +70,16 @@ const Weekplanerscreen = () => {
       </View>
 
       <View style={styles.bottomContainer}>
-        <Text style={styles.bottomText}>Zutatenliste</Text>
-        
-      </View>
+  <Text style={styles.bottomText}>Zutatenliste</Text>
+  
+  {cellData
+    .filter((recipe) => recipe !== null) // Filtere alle Rezepte, die nicht null sind
+    .map((recipe, index) => (
+      <Text key={index} style={styles.recipeNameText}>
+        {recipe.name}
+      </Text>
+    ))}
+</View>
 
       <Modal
         animationType="slide"
