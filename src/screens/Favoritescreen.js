@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+"use client";
 import {
   StyleSheet,
   Text,
@@ -6,127 +6,126 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  Modal,
-  Button,
+  TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import supabase from "../data/API_Config";
+import { FavoriteController } from "../controller/FavoriteController";
+import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+
+const Tab = createMaterialTopTabNavigator();
+
+const RecipeList = ({
+  recipes,
+  onRemoveFavorite,
+  onNavigateToDetail,
+  showFavoriteButton,
+}) => (
+  <ScrollView>
+    {recipes.length === 0 ? (
+      <Text style={styles.noResults}>Keine Rezepte gefunden</Text>
+    ) : (
+      recipes.map((recipe) => (
+        <TouchableOpacity
+          key={recipe.id}
+          style={styles.recipeItem}
+          onPress={() => onNavigateToDetail(recipe.id)}
+        >
+          <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
+          <Text style={styles.recipeName}>{recipe.name}</Text>
+          {showFavoriteButton && (
+            <TouchableOpacity
+              onPress={(e) => {
+                e.stopPropagation();
+                onRemoveFavorite(recipe.id);
+              }}
+            >
+              <Ionicons name="heart" size={24} color="red" />
+            </TouchableOpacity>
+          )}
+        </TouchableOpacity>
+      ))
+    )}
+  </ScrollView>
+);
+
+const FavoriteRecipesScreen = ({
+  favorites,
+  onRemoveFavorite,
+  onNavigateToDetail,
+}) => (
+  <View style={styles.tabContent}>
+    <RecipeList
+      recipes={favorites}
+      onRemoveFavorite={onRemoveFavorite}
+      onNavigateToDetail={onNavigateToDetail}
+      showFavoriteButton={true}
+    />
+  </View>
+);
+
+const UserRecipesScreen = ({ userRecipes, onNavigateToDetail }) => (
+  <View style={styles.tabContent}>
+    <RecipeList
+      recipes={userRecipes}
+      onNavigateToDetail={onNavigateToDetail}
+      showFavoriteButton={false}
+    />
+  </View>
+);
 
 const Favoritescreen = () => {
-  const [favorites, setFavorites] = useState([]);
-  const [selectedRecipe, setSelectedRecipe] = useState(null);
-  const [modalVisible, setModalVisible] = useState(false);
-
-  useEffect(() => {
-    fetchFavorites();
-
-    const realTime = supabase
-      .channel("favorites_changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "favorites" },
-        handleFavoritesChange
-      )
-      .subscribe();
-
-    return () => {
-      realTime.unsubscribe();
-    };
-  }, []);
-
-  const fetchFavorites = async () => {
-    try {
-      const { data, error } = await supabase.from("favorites").select(`
-          recipe_id,
-          recipes (
-            id,
-            title,
-            image
-          )
-        `);
-
-      if (error) throw error;
-
-      const formattedFavorites = data.map((fav) => ({
-        id: fav.recipes.id,
-        name: fav.recipes.title,
-        image: fav.recipes.image,
-        isFavorite: true,
-      }));
-
-      setFavorites(formattedFavorites);
-    } catch (error) {
-      console.error("Error fetching favorites:", error.message);
-    }
-  };
-
-  const handleFavoritesChange = () => {
-    fetchFavorites();
-  };
-
-  const openModal = (recipe) => {
-    setSelectedRecipe(recipe);
-    setModalVisible(true);
-  };
-
-  const closeModal = () => {
-    setModalVisible(false);
-    setSelectedRecipe(null);
-  };
-
-  const handleRemoveFavorite = async (id) => {
-    try {
-      const { error } = await supabase
-        .from("favorites")
-        .delete()
-        .eq("recipe_id", id);
-
-      if (error) throw error;
-    } catch (error) {
-      console.error("Error removing favorite:", error.message);
-    }
-  };
+  const {
+    searchQuery,
+    filteredFavorites,
+    filteredUserRecipes,
+    handleSearch,
+    handleRemoveFavorite,
+    navigateToRecipeDetail,
+  } = FavoriteController();
 
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.recipeList}>
-        {favorites.map((recipe) => (
-          <TouchableOpacity
-            key={recipe.id}
-            style={styles.recipeItem}
-            onPress={() => openModal(recipe)}
-          >
-            <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
-            <Text style={styles.recipeName}>{recipe.name}</Text>
-            <TouchableOpacity onPress={() => handleRemoveFavorite(recipe.id)}>
-              <Ionicons name="heart" size={24} color="red" />
-            </TouchableOpacity>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      <Modal
-        visible={modalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={closeModal}
+      <View style={styles.searchBar}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Suche nach Rezepten..."
+          placeholderTextColor="#888"
+          value={searchQuery}
+          onChangeText={handleSearch}
+        />
+        <TouchableOpacity onPress={() => handleSearch(searchQuery)}>
+          <Ionicons name="search" size={24} color="#FF6347" />
+        </TouchableOpacity>
+      </View>
+      <Tab.Navigator
+        screenOptions={{
+          tabBarStyle: {
+            elevation: 0,
+            shadowOpacity: 0,
+            borderBottomWidth: 1,
+            borderBottomColor: "#f0f0f0",
+          },
+          tabBarIndicatorStyle: { backgroundColor: "#FF6347" },
+        }}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            {selectedRecipe && (
-              <>
-                <Image
-                  source={{ uri: selectedRecipe.image }}
-                  style={styles.modalImage}
-                />
-                <Text style={styles.modalTitle}>{selectedRecipe.name}</Text>
-                <Text style={styles.modalDescription}>Rezeptdetails</Text>
-                <Button title="Schließen" onPress={closeModal} />
-              </>
-            )}
-          </View>
-        </View>
-      </Modal>
+        <Tab.Screen name="Favoriten">
+          {() => (
+            <FavoriteRecipesScreen
+              favorites={filteredFavorites}
+              onRemoveFavorite={handleRemoveFavorite}
+              onNavigateToDetail={navigateToRecipeDetail}
+            />
+          )}
+        </Tab.Screen>
+        <Tab.Screen name="Meine Rezepte">
+          {() => (
+            <UserRecipesScreen
+              userRecipes={filteredUserRecipes}
+              onNavigateToDetail={navigateToRecipeDetail}
+            />
+          )}
+        </Tab.Screen>
+      </Tab.Navigator>
     </View>
   );
 };
@@ -135,12 +134,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingTop: 50,
   },
-  recipeList: {
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f0f0f0",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    margin: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  searchInput: {
     flex: 1,
-    paddingHorizontal: 20,
-    marginTop: 30,
+    fontSize: 16,
+    color: "#333",
   },
   recipeItem: {
     flexDirection: "row",
@@ -149,6 +161,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f8f8",
     borderRadius: 10,
     padding: 10,
+    marginHorizontal: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -167,40 +180,14 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#333",
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContent: {
-    width: "80%",
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 20,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  modalImage: {
-    width: 150,
-    height: 150,
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-  modalTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  modalDescription: {
-    fontSize: 16,
-    color: "#555",
+  noResults: {
+    fontSize: 18,
     textAlign: "center",
-    marginBottom: 20,
+    color: "#888",
+    marginTop: 20,
+  },
+  tabContent: {
+    paddingTop: 16,
   },
 });
 
