@@ -51,10 +51,4 @@ expo start
 
 ```
 
-## 5. Ausführen der Tests
 
-```bash
-
-npm test
-
-```
