@@ -6,7 +6,7 @@ CookMaster ist eine React Native Anwendung, die es Nutzern ermöglicht, seine ei
 
 ## Systemanforderungen
 
-Um CookMaster auszuführen, müssen die folgende Systemanforderungen erfüllt sein:
+Um CookMaster auszuführen, müssen die folgende Systemanforderungen erfüllt und aktuell sein:
 
 - Node.js 
 - npm 
