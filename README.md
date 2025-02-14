@@ -21,11 +21,14 @@ Die folgenden Software-Abhängigkeiten werden in diesem Projekt verwendet:
 - React Navigation
 - Expo-CLI
 
+
+### Nicht mit IOS kompatibel (Es wird nicht richtig auf IOS Geräte angezeigt)
+
 ## Schritte zum Aufsetzen und Starten der App
 
 ### 1. Repository klonen
 
-git clone https://github.com/mirih2o/MoodDiary
+git clone https://github.com/Throm333/Cook-Master.git
 
 ### 2. Expo CLI installieren
 
