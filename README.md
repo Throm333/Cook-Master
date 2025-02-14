@@ -2,11 +2,11 @@
 
 ## Beschreibung
 
-CookMaster ist eine React Native Anwendung, die es Nutzers ermöglicht, seine eigene Rezepte zu erstellen und zu speichern. 
+CookMaster ist eine React Native Anwendung, die es Nutzern ermöglicht, seine eigene Rezepte zu erstellen, zu speichen und für die Woche planen zu können.
 
 ## Systemanforderungen
 
-Um CookMaster auszuführen, müssen die folgenden Systemanforderungen erfüllen sein:
+Um CookMaster auszuführen, müssen die folgende Systemanforderungen erfüllt sein:
 
 - Node.js 
 - npm 
